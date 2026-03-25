@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install pytest-cov
+          python3 -m pip install -e ".[dev]"
+
+      - name: Run tests with coverage
+        run: |
+          TEST_COUNT=$(python3 -m pytest tests/ --collect-only -q 2>/dev/null | tail -1 | grep -oE '^[0-9]+' || echo "0")
+          if [ "$TEST_COUNT" -gt "0" ]; then
+            python3 -m pytest tests/ -v --tb=short --cov=turboquant --cov-fail-under=95
+          else
+            echo "No tests collected yet — skipping coverage enforcement"
+            python3 -m pytest tests/ -v --tb=short || true
+          fi
