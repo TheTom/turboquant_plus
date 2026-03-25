@@ -35,7 +35,7 @@ Compresses transformer KV cache **up to 4.9×** using PolarQuant + QJL. Paper cl
 | turbo4 | 4.25 | 24.3 | 5.2 | 3.8× |
 | turbo3 | 3.25 | 29.8 | 5.3 | **4.9×** |
 
-> **Speed**: turbo3 is ~3-8× slower than q8_0 on generation (model-dependent). The Fast Walsh-Hadamard rotation adds O(d log d) compute per KV block. Optimization ongoing ([#23](https://github.com/TheTom/turboquant_plus/issues/23)). The dense 27B model at 5.3 tok/s with 4.9× compression is approaching practical use for long-context scenarios where memory is the bottleneck.
+> **Speed**: turbo3 is currently ~3-8× slower than q8_0 on generation due to WHT rotation in the dequant path. Speed ceiling test (rotation removed) shows **49.1 tok/s** (57% of q8_0) — achievable via pre-rotate-queries optimization which moves rotation from per-KV-position to per-query. Implementation in progress ([#23](https://github.com/TheTom/turboquant_plus/issues/23)).
 
 ### Compression Quality (Python Prototype)
 
@@ -207,7 +207,7 @@ benchmarks/
 | Real model validation | ✅ | Rotation validated on Qwen3 KV tensors (kurtosis 900→2.9) |
 | llama.cpp C port | ✅ | Metal GPU inference working on M5 Max |
 | Benchmarks (v1) | ✅ | MoE + Dense, 4 cache types each |
-| Metal shader optimization | 🔄 | Fix 13-35× speed regression ([#23](https://github.com/TheTom/turboquant_plus/issues/23)) |
+| Metal shader optimization | 🔄 | Pre-rotate-queries: 10.7→49 tok/s target ([#23](https://github.com/TheTom/turboquant_plus/issues/23)) |
 | Benchmark hardening | 🔄 | Perplexity, NIAH, multi-run ([#24](https://github.com/TheTom/turboquant_plus/issues/24)) |
 | TurboQuant+ extensions | ⏳ | Adaptive bits, temporal decay, MoE-aware compression |
 | MLX port | ⏳ | Last |
