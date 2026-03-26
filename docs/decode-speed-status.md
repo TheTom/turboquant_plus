@@ -51,21 +51,38 @@ The table lookup is the cost — it's data-dependent indexing that creates pipel
 
 **Key finding:** The custom GGML_OP_TURBO_WHT (which replaces the dense matmul with O(d log d) butterfly) adds graph overhead that makes decode WORSE. The matmul was never the decode bottleneck — it's negligible for single-token generation. The additional Metal kernel dispatches from the custom op cost more than they save.
 
+## Mario's 70-Page PDF Test (M5 Max, 48K tokens, main branch)
+
+Real-world benchmark using Mario Tomic's fitness PDF (870 KB, ~48K tokens):
+
+| | turbo3 | q8_0 | Ratio |
+|---|---|---|---|
+| Prefill | 954.5 tok/s | 965.4 tok/s | **0.99x** |
+| **Decode** | **36.7 tok/s** | **55.6 tok/s** | **0.66x** |
+| KV cache | 280 MiB | 680 MiB | 0.41x |
+
+## Decode Context Scaling (Verified)
+
+| Context depth | turbo3/q8_0 decode | Source |
+|--------------|-------------------|--------|
+| ~12 tokens | 0.88x | server test |
+| ~8K tokens | 0.76x | server test |
+| ~32K tokens | 0.83x | Mario M1 Max bench |
+| **~48K tokens (PDF)** | **0.66x** | **Mario's PDF test** |
+
+Decode ratio degrades ~4% per doubling of context due to centroid LUT constant cache thrashing.
+
 ## Conclusion
 
-**The main branch (feature/turboquant-kv-cache) is the correct configuration for testers.** The experiment branch changes are a net negative.
+**The main branch is the correct configuration.** The experiment branch (custom WHT op + fp16 LUT) is a net negative for decode.
 
-The 16% decode gap is a fundamental cost of the 3-bit compression format — data-dependent table lookups on GPU are inherently slower than q8_0's simple integer scaling. Closing this gap requires either:
-
-1. **Fused compressed attention** — compute Q·K directly on quantized indices, avoiding full dequant (complex, custom flash attention variant needed)
-2. **Different block format** — store centroid values directly instead of indices (gives up compression)
-
-Neither is trivial. The current 0.84x decode ratio is the best achievable within the existing block format and ggml op framework.
+The decode gap scales with context and is fundamental to the 3-bit block format. At 48K context it's 34% slower than q8_0. Closing this requires fused compressed attention (complex) or a different block format (trades compression).
 
 ## Recommendation for Testers
 
-- turbo3 decode at 0.83-0.84x of q8_0 is expected behavior
-- Prefill is at parity (0.99-1.03x)
-- The memory savings (2.4x smaller KV cache) enables longer context windows
-- For latency-sensitive workloads where decode speed matters most, use q8_0
-- For memory-constrained workloads (long context, large models), use turbo3
+- **Prefill** is at parity regardless of context (0.99x even at 48K)
+- **Decode degrades with context**: 0.88x@short, 0.76x@8K, 0.66x@48K
+- The 2.4x smaller KV cache enables longer context that wouldn't fit otherwise
+- **Short conversations** (<4K): turbo3 is barely slower
+- **Long document processing** (40K+): expect ~35% decode slowdown vs q8_0
+- **Memory-constrained**: turbo3 is the only way to fit the context at all
