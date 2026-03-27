@@ -184,3 +184,19 @@ The 4-mag LUT is the dequant-level ceiling. The remaining 38% gap requires:
 1. **Block format change**: embed precomputed centroid×norm in device memory (sequential reads, zero divergence)
 2. **Custom FA kernel**: fuse dequant into attention with restructured computation
 3. **Different quantization scheme**: format designed for Metal's constraints from scratch
+
+## Extended Experiments (approaches 12-13, 2026-03-27)
+
+| # | Approach | M2 8K tok/s | vs 4-mag | Key finding |
+|---|----------|-------------|---------|-------------|
+| 12 | FMA branchless (zero ternary, zero memory) | 11.4 | -24% | 7 ALU ops slower than 4 constant reads even with fma() |
+| 13 | simd_shuffle cross-lane magnitude select | 14.7 | -2.6% | Shuffle latency ≈ constant read latency on Apple8 |
+
+### FMA branchless details
+Fully branchless: XOR mask via `3 - 3*sign_bit` (not ternary), sign via `2*s - 1` (not ternary), magnitude via 3-chained `fma()`. Zero branches, zero memory. Still slower because 7 ALU cycles > 1 divergent constant read cycle on Apple8.
+
+### simd_shuffle details
+Threads 0-3 within each 8-thread block compute mag[i]×norm. All threads use `simd_shuffle(value, block_base + mi)` to read the correct mag×norm. This IS branchless and memory-free — the value moves via cross-lane register transfer. But shuffle latency on Apple8 is comparable to constant cache access, negating the benefit.
+
+### Total: 13 approaches tested
+The 4-mag constant LUT at 15.1 tok/s (0.69× q8_0) is the definitive dequant-level ceiling on Apple8 hardware. Every alternative — fewer constant addresses, zero constant addresses, branchless ALU, cross-lane shuffle, inline FA blocks — is equal or worse.
