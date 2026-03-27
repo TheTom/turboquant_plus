@@ -136,16 +136,27 @@ The benefit scales with context length because longer contexts have more positio
 
 Sparse V perplexity (6.176) is actually *lower* (better) than baseline turbo3 (6.211). The threshold is conservative enough that skipping negligible positions introduces no measurable quality degradation.
 
-**Long-context validation:** The c=512 result above is a sanity check — at 512 tokens, sparse V skips ~6% of positions and has negligible effect. To validate under conditions where sparse V is actively skipping positions, we ran perplexity at longer context lengths:
+**Long-context validation:** The c=512 result above is a no-regression sanity check — at 512 tokens, sparse V skips ~6% of positions and has negligible effect. To validate under conditions where sparse V is actively skipping positions, we ran perplexity at longer context lengths with increased chunk counts for statistical power. q8\_0 baselines were run first to confirm corpus/chunk sanity before evaluating turbo3.
 
-| Context | Sparse V ON | Sparse V OFF | Delta | Est. skip rate |
-|---------|------------|-------------|-------|---------------|
-| 512 | 6.1756 | 6.1756 | 0.0000 | ~6% |
-| 8192 | 5.5700 | 5.5700 | 0.0000 | ~28% |
-| 16384 | 5.1122 | 5.1122 | 0.0000 | ~51% |
-| 32768 | 6.1293 | 6.1293 | 0.0000 | ~90% |
+| Context | Chunks | q8\_0 | turbo3 ON | turbo3 OFF | ON/OFF Δ | vs q8\_0 |
+|---------|--------|-------|-----------|------------|----------|---------|
+| 8K | 20 | 5.4592 | 5.5195 | 5.5195 | 0.0000 | +1.1% |
+| 16K | 10 | 5.0008 | 5.0630 | 5.0630 | 0.0000 | +1.2% |
+| 32K | 5 | 6.0274 | 6.1103 | 6.1103 | 0.0000 | +1.4% |
 
-All runs use $\tau = 10^{-6}$. PPL is numerically identical with and without sparse V at every context length tested in this setup, including 32K where approximately 90% of V dequantizations are skipped. At longer context, skip rate increases substantially, indicating that skipped positions fall below numerical significance rather than contributing meaningful signal. Dense model (Qwen3.5-27B) shows the same result at 8K (7.0152 both ways). Full methodology and raw commands: [`long-context-sparse-v-validation.md`](../long-context-sparse-v-validation.md).
+All runs use $\tau = 10^{-6}$. PPL is numerically identical with and without sparse V at every context length tested in this setup. The +1.1–1.4% gap vs q8\_0 is the underlying TurboQuant compression overhead — consistent across context lengths and unaffected by sparse V.
+
+**Direct skip-rate measurement** (Qwen3-1.7B, eager attention with `output_attentions=True`):
+
+| Context | Overall skip rate | Min layer | Max layer | Median layer |
+|---------|------------------|-----------|-----------|-------------|
+| 512 | 9.1% | 0.0% | 32.1% | 6.3% |
+| 2048 | 20.7% | 2.0% | 59.5% | 15.0% |
+| 4096 | 28.4% | 3.7% | 72.4% | 24.5% |
+
+Skip rate was measured directly by counting attention weights below $\tau$ across all layers and heads. Measurement used Qwen3-1.7B (same architecture family, fits in memory with eager attention). Skip rates on the 35B model are estimated from decode speed improvements at ~28% (8K), ~51% (16K), and ~90% (32K).
+
+Skip rate increases with context length as expected: softmax concentrates on fewer positions as the sequence grows. Early layers show higher skip rates (broader attention patterns), while later layers are more focused. Full methodology, per-layer data, and raw commands: [`long-context-sparse-v-validation.md`](../long-context-sparse-v-validation.md).
 
 ### 4.4 KL Divergence vs f16
 

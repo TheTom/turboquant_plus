@@ -1,0 +1,54 @@
+Long-Context Sparse V Full Validation — Raw Results
+Date: 2026-03-27
+Hardware: Apple M5 Max 128GB
+Model: Qwen3.5-35B-A3B Q8_0 (MoE)
+Branch: feature/turboquant-kv-cache @ a52586e (post-PR#4-revert)
+KV cache: turbo3 (3.5-bit TurboQuant)
+Sparse V threshold: τ = 1e-6
+
+NOTE: PR #4 was reverted (a52586e) after discovering it broke turbo3
+(PPL 6.18 → 181.6). All runs below are on the clean reverted branch.
+q8_0 baselines run first to confirm corpus/chunk sanity before turbo3.
+
+=== 8K CONTEXT (20 chunks) ===
+q8_0 baseline:    PPL = 5.4592 +/- 0.04452
+turbo3 sparse ON: PPL = 5.5195 +/- 0.04507  (vs q8_0: +1.10%)
+turbo3 sparse OFF:PPL = 5.5195 +/- 0.04507  (ON/OFF delta: 0.0000)
+
+=== 16K CONTEXT (10 chunks) ===
+q8_0 baseline:    PPL = 5.0008 +/- 0.03930
+turbo3 sparse ON: PPL = 5.0630 +/- 0.03991  (vs q8_0: +1.24%)
+turbo3 sparse OFF:PPL = 5.0630 +/- 0.03991  (ON/OFF delta: 0.0000)
+
+=== 32K CONTEXT (5 chunks) ===
+q8_0 baseline:    PPL = 6.0274 +/- 0.05042
+turbo3 sparse ON: PPL = 6.1103 +/- 0.05133  (vs q8_0: +1.38%)
+turbo3 sparse OFF:PPL = 6.1103 +/- 0.05133  (ON/OFF delta: 0.0000)
+
+=== SKIP RATE — DIRECT MEASUREMENT (Qwen3-1.7B, eager attention) ===
+Method: output_attentions=True, count positions where weight < 1e-6
+Model: Qwen/Qwen3-1.7B (28 layers, different from eval model but same architecture family)
+
+Context 512:  9.1% skip (min layer 0.0%, max 32.1%, median 6.3%)
+Context 2048: 20.7% skip (min layer 2.0%, max 59.5%, median 15.0%)
+Context 4096: 28.4% skip (min layer 3.7%, max 72.4%, median 24.5%)
+
+Limitation: direct measurement used Qwen3-1.7B (fits in memory with eager attention).
+The 35B MoE model cannot run eager attention (OOM). Skip rates on the 35B model
+are estimated from decode speed improvements:
+  8K:  ~28% (from +7.2% decode improvement)
+  16K: ~51% (from +12.9% decode improvement)
+  32K: ~90% (from +22.8% decode improvement, confirmed by profiling during development)
+
+=== COMMANDS ===
+# q8_0 baselines
+llama-perplexity -m $MODEL -f wiki.test.raw -c $CTX -ctk q8_0 -ctv q8_0 -fa on --chunks $N -ngl 99
+
+# turbo3 with sparse V (default on M5)
+llama-perplexity -m $MODEL -f wiki.test.raw -c $CTX -ctk turbo3 -ctv turbo3 -fa on --chunks $N -ngl 99
+
+# turbo3 without sparse V
+TURBO_SPARSE_V=0 llama-perplexity -m $MODEL -f wiki.test.raw -c $CTX -ctk turbo3 -ctv turbo3 -fa on --chunks $N -ngl 99
+
+# Direct skip rate measurement
+python3 scripts/measure_skip_rate.py 512 2048 4096

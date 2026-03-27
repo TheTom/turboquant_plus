@@ -1,0 +1,826 @@
+[
+  {
+    "context_length": 512,
+    "threshold": 1e-06,
+    "overall_skip_rate": 0.09126935686383929,
+    "total_positions": 229376,
+    "total_skipped": 20935,
+    "n_layers": 28,
+    "per_layer": [
+      {
+        "layer": 0,
+        "skip_rate": 0.3023681640625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.888671875,
+        "median_head_skip": 0.140625
+      },
+      {
+        "layer": 1,
+        "skip_rate": 0.0775146484375,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.498046875,
+        "median_head_skip": 0.00390625
+      },
+      {
+        "layer": 2,
+        "skip_rate": 0.108642578125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.5546875,
+        "median_head_skip": 0.017578125
+      },
+      {
+        "layer": 3,
+        "skip_rate": 0.1229248046875,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.431640625,
+        "median_head_skip": 0.03515625
+      },
+      {
+        "layer": 4,
+        "skip_rate": 0.2064208984375,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.638671875,
+        "median_head_skip": 0.150390625
+      },
+      {
+        "layer": 5,
+        "skip_rate": 0.3212890625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.6328125,
+        "median_head_skip": 0.28125
+      },
+      {
+        "layer": 6,
+        "skip_rate": 0.2747802734375,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.8984375,
+        "median_head_skip": 0.046875
+      },
+      {
+        "layer": 7,
+        "skip_rate": 0.13330078125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.458984375,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 8,
+        "skip_rate": 0.0172119140625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.125,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 9,
+        "skip_rate": 0.0830078125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.40234375,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 10,
+        "skip_rate": 0.0894775390625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.3359375,
+        "median_head_skip": 0.009765625
+      },
+      {
+        "layer": 11,
+        "skip_rate": 0.2235107421875,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.88671875,
+        "median_head_skip": 0.07421875
+      },
+      {
+        "layer": 12,
+        "skip_rate": 0.0,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.0,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 13,
+        "skip_rate": 0.0211181640625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.169921875,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 14,
+        "skip_rate": 0.012939453125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.140625,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 15,
+        "skip_rate": 0.057861328125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.42578125,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 16,
+        "skip_rate": 0.1146240234375,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.80859375,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 17,
+        "skip_rate": 0.0225830078125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.296875,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 18,
+        "skip_rate": 0.0313720703125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.369140625,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 19,
+        "skip_rate": 0.056640625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.55078125,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 20,
+        "skip_rate": 0.1002197265625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.607421875,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 21,
+        "skip_rate": 0.0634765625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.681640625,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 22,
+        "skip_rate": 0.00048828125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.005859375,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 23,
+        "skip_rate": 0.046875,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.33203125,
+        "median_head_skip": 0.001953125
+      },
+      {
+        "layer": 24,
+        "skip_rate": 0.0181884765625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.08984375,
+        "median_head_skip": 0.001953125
+      },
+      {
+        "layer": 25,
+        "skip_rate": 0.0191650390625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.201171875,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 26,
+        "skip_rate": 0.00439453125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.046875,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 27,
+        "skip_rate": 0.025146484375,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.173828125,
+        "median_head_skip": 0.001953125
+      }
+    ]
+  },
+  {
+    "context_length": 2048,
+    "threshold": 1e-06,
+    "overall_skip_rate": 0.20713915143694198,
+    "total_positions": 917504,
+    "total_skipped": 190051,
+    "n_layers": 28,
+    "per_layer": [
+      {
+        "layer": 0,
+        "skip_rate": 0.445709228515625,
+        "min_head_skip": 0.0009765625,
+        "max_head_skip": 0.98291015625,
+        "median_head_skip": 0.3125
+      },
+      {
+        "layer": 1,
+        "skip_rate": 0.147979736328125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.61865234375,
+        "median_head_skip": 0.029296875
+      },
+      {
+        "layer": 2,
+        "skip_rate": 0.268890380859375,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.54541015625,
+        "median_head_skip": 0.29736328125
+      },
+      {
+        "layer": 3,
+        "skip_rate": 0.41693115234375,
+        "min_head_skip": 0.00537109375,
+        "max_head_skip": 0.8515625,
+        "median_head_skip": 0.4375
+      },
+      {
+        "layer": 4,
+        "skip_rate": 0.449554443359375,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.873046875,
+        "median_head_skip": 0.5224609375
+      },
+      {
+        "layer": 5,
+        "skip_rate": 0.594757080078125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.83154296875,
+        "median_head_skip": 0.70263671875
+      },
+      {
+        "layer": 6,
+        "skip_rate": 0.353179931640625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.89990234375,
+        "median_head_skip": 0.21044921875
+      },
+      {
+        "layer": 7,
+        "skip_rate": 0.325439453125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.7958984375,
+        "median_head_skip": 0.2021484375
+      },
+      {
+        "layer": 8,
+        "skip_rate": 0.12017822265625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.60791015625,
+        "median_head_skip": 0.005859375
+      },
+      {
+        "layer": 9,
+        "skip_rate": 0.2154541015625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.705078125,
+        "median_head_skip": 0.1044921875
+      },
+      {
+        "layer": 10,
+        "skip_rate": 0.3370361328125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.7451171875,
+        "median_head_skip": 0.26708984375
+      },
+      {
+        "layer": 11,
+        "skip_rate": 0.3028564453125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.890625,
+        "median_head_skip": 0.1796875
+      },
+      {
+        "layer": 12,
+        "skip_rate": 0.0206298828125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.0791015625,
+        "median_head_skip": 0.0087890625
+      },
+      {
+        "layer": 13,
+        "skip_rate": 0.06243896484375,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.3525390625,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 14,
+        "skip_rate": 0.1207275390625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.509765625,
+        "median_head_skip": 0.02197265625
+      },
+      {
+        "layer": 15,
+        "skip_rate": 0.1368408203125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.66015625,
+        "median_head_skip": 0.0009765625
+      },
+      {
+        "layer": 16,
+        "skip_rate": 0.159088134765625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.85107421875,
+        "median_head_skip": 0.009765625
+      },
+      {
+        "layer": 17,
+        "skip_rate": 0.078155517578125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.59912109375,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 18,
+        "skip_rate": 0.084808349609375,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.607421875,
+        "median_head_skip": 0.00244140625
+      },
+      {
+        "layer": 19,
+        "skip_rate": 0.091583251953125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.6015625,
+        "median_head_skip": 0.01318359375
+      },
+      {
+        "layer": 20,
+        "skip_rate": 0.140777587890625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.6943359375,
+        "median_head_skip": 0.00146484375
+      },
+      {
+        "layer": 21,
+        "skip_rate": 0.116119384765625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.802734375,
+        "median_head_skip": 0.00048828125
+      },
+      {
+        "layer": 22,
+        "skip_rate": 0.019805908203125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.1220703125,
+        "median_head_skip": 0.00048828125
+      },
+      {
+        "layer": 23,
+        "skip_rate": 0.2581787109375,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.6591796875,
+        "median_head_skip": 0.10400390625
+      },
+      {
+        "layer": 24,
+        "skip_rate": 0.135986328125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.26708984375,
+        "median_head_skip": 0.14013671875
+      },
+      {
+        "layer": 25,
+        "skip_rate": 0.159423828125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.81298828125,
+        "median_head_skip": 0.07958984375
+      },
+      {
+        "layer": 26,
+        "skip_rate": 0.0875244140625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.36474609375,
+        "median_head_skip": 0.00390625
+      },
+      {
+        "layer": 27,
+        "skip_rate": 0.14984130859375,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.6748046875,
+        "median_head_skip": 0.0556640625
+      }
+    ]
+  },
+  {
+    "context_length": 4096,
+    "threshold": 1e-06,
+    "overall_skip_rate": 0.28397914341517855,
+    "total_positions": 1835008,
+    "total_skipped": 521104,
+    "n_layers": 28,
+    "per_layer": [
+      {
+        "layer": 0,
+        "skip_rate": 0.55401611328125,
+        "min_head_skip": 0.008544921875,
+        "max_head_skip": 0.9140625,
+        "median_head_skip": 0.641357421875
+      },
+      {
+        "layer": 1,
+        "skip_rate": 0.2466278076171875,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.719482421875,
+        "median_head_skip": 0.10009765625
+      },
+      {
+        "layer": 2,
+        "skip_rate": 0.3243408203125,
+        "min_head_skip": 0.001220703125,
+        "max_head_skip": 0.72607421875,
+        "median_head_skip": 0.232177734375
+      },
+      {
+        "layer": 3,
+        "skip_rate": 0.518707275390625,
+        "min_head_skip": 0.03759765625,
+        "max_head_skip": 0.81494140625,
+        "median_head_skip": 0.61279296875
+      },
+      {
+        "layer": 4,
+        "skip_rate": 0.525970458984375,
+        "min_head_skip": 0.0029296875,
+        "max_head_skip": 0.83984375,
+        "median_head_skip": 0.703125
+      },
+      {
+        "layer": 5,
+        "skip_rate": 0.7236175537109375,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.916015625,
+        "median_head_skip": 0.808349609375
+      },
+      {
+        "layer": 6,
+        "skip_rate": 0.4510955810546875,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.92041015625,
+        "median_head_skip": 0.47998046875
+      },
+      {
+        "layer": 7,
+        "skip_rate": 0.4154205322265625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.87060546875,
+        "median_head_skip": 0.480224609375
+      },
+      {
+        "layer": 8,
+        "skip_rate": 0.1560821533203125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.63525390625,
+        "median_head_skip": 0.0419921875
+      },
+      {
+        "layer": 9,
+        "skip_rate": 0.3094940185546875,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.848388671875,
+        "median_head_skip": 0.285400390625
+      },
+      {
+        "layer": 10,
+        "skip_rate": 0.4444122314453125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.881591796875,
+        "median_head_skip": 0.514892578125
+      },
+      {
+        "layer": 11,
+        "skip_rate": 0.3394927978515625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.8984375,
+        "median_head_skip": 0.081298828125
+      },
+      {
+        "layer": 12,
+        "skip_rate": 0.0365447998046875,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.1904296875,
+        "median_head_skip": 0.01220703125
+      },
+      {
+        "layer": 13,
+        "skip_rate": 0.1148529052734375,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.496826171875,
+        "median_head_skip": 0.0009765625
+      },
+      {
+        "layer": 14,
+        "skip_rate": 0.137725830078125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.5087890625,
+        "median_head_skip": 0.031005859375
+      },
+      {
+        "layer": 15,
+        "skip_rate": 0.2205047607421875,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.842041015625,
+        "median_head_skip": 0.012451171875
+      },
+      {
+        "layer": 16,
+        "skip_rate": 0.2451934814453125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.8125,
+        "median_head_skip": 0.05078125
+      },
+      {
+        "layer": 17,
+        "skip_rate": 0.209136962890625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.748779296875,
+        "median_head_skip": 0.134765625
+      },
+      {
+        "layer": 18,
+        "skip_rate": 0.1383514404296875,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.7666015625,
+        "median_head_skip": 0.036376953125
+      },
+      {
+        "layer": 19,
+        "skip_rate": 0.1508026123046875,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.434326171875,
+        "median_head_skip": 0.055419921875
+      },
+      {
+        "layer": 20,
+        "skip_rate": 0.2902984619140625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.837890625,
+        "median_head_skip": 0.200927734375
+      },
+      {
+        "layer": 21,
+        "skip_rate": 0.1920166015625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.899658203125,
+        "median_head_skip": 0.027587890625
+      },
+      {
+        "layer": 22,
+        "skip_rate": 0.085174560546875,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.330078125,
+        "median_head_skip": 0.01708984375
+      },
+      {
+        "layer": 23,
+        "skip_rate": 0.35595703125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.840087890625,
+        "median_head_skip": 0.3037109375
+      },
+      {
+        "layer": 24,
+        "skip_rate": 0.24481201171875,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.470458984375,
+        "median_head_skip": 0.270263671875
+      },
+      {
+        "layer": 25,
+        "skip_rate": 0.2393798828125,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.488037109375,
+        "median_head_skip": 0.2490234375
+      },
+      {
+        "layer": 26,
+        "skip_rate": 0.128570556640625,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.7626953125,
+        "median_head_skip": 0.021484375
+      },
+      {
+        "layer": 27,
+        "skip_rate": 0.1528167724609375,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.719970703125,
+        "median_head_skip": 0.071533203125
+      }
+    ]
+  },
+  {
+    "context_length": 5001,
+    "threshold": 1e-06,
+    "overall_skip_rate": 0.2694229011340589,
+    "total_positions": 2240448,
+    "total_skipped": 603628,
+    "n_layers": 28,
+    "per_layer": [
+      {
+        "layer": 0,
+        "skip_rate": 0.34598079323768616,
+        "min_head_skip": 0.013197360560297966,
+        "max_head_skip": 0.9456108808517456,
+        "median_head_skip": 0.4149170219898224
+      },
+      {
+        "layer": 1,
+        "skip_rate": 0.2810937762260437,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.7000600099563599,
+        "median_head_skip": 0.1637672483921051
+      },
+      {
+        "layer": 2,
+        "skip_rate": 0.34376874566078186,
+        "min_head_skip": 0.01579684019088745,
+        "max_head_skip": 0.698860228061676,
+        "median_head_skip": 0.300339937210083
+      },
+      {
+        "layer": 3,
+        "skip_rate": 0.5537017583847046,
+        "min_head_skip": 0.00019996000628452748,
+        "max_head_skip": 0.8866226673126221,
+        "median_head_skip": 0.599880039691925
+      },
+      {
+        "layer": 4,
+        "skip_rate": 0.3990201950073242,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.9078184366226196,
+        "median_head_skip": 0.34953010082244873
+      },
+      {
+        "layer": 5,
+        "skip_rate": 0.7021345496177673,
+        "min_head_skip": 0.0011997600086033344,
+        "max_head_skip": 0.9572085738182068,
+        "median_head_skip": 0.8390321731567383
+      },
+      {
+        "layer": 6,
+        "skip_rate": 0.3899095058441162,
+        "min_head_skip": 0.023395320400595665,
+        "max_head_skip": 0.9996000528335571,
+        "median_head_skip": 0.26654669642448425
+      },
+      {
+        "layer": 7,
+        "skip_rate": 0.43171364068984985,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.8666266798973083,
+        "median_head_skip": 0.4631073772907257
+      },
+      {
+        "layer": 8,
+        "skip_rate": 0.21636922657489777,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.9382123351097107,
+        "median_head_skip": 0.08238352090120316
+      },
+      {
+        "layer": 9,
+        "skip_rate": 0.2380273938179016,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.7858428359031677,
+        "median_head_skip": 0.05498900264501572
+      },
+      {
+        "layer": 10,
+        "skip_rate": 0.1575309932231903,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.5962807536125183,
+        "median_head_skip": 0.031993601471185684
+      },
+      {
+        "layer": 11,
+        "skip_rate": 0.4433863162994385,
+        "min_head_skip": 0.003799240104854107,
+        "max_head_skip": 0.9822035431861877,
+        "median_head_skip": 0.44391122460365295
+      },
+      {
+        "layer": 12,
+        "skip_rate": 0.11860127747058868,
+        "min_head_skip": 0.005398920271545649,
+        "max_head_skip": 0.4095180928707123,
+        "median_head_skip": 0.061787642538547516
+      },
+      {
+        "layer": 13,
+        "skip_rate": 0.37648719549179077,
+        "min_head_skip": 0.008798240683972836,
+        "max_head_skip": 0.7738452553749084,
+        "median_head_skip": 0.33693259954452515
+      },
+      {
+        "layer": 14,
+        "skip_rate": 0.09316886216402054,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.5880823731422424,
+        "median_head_skip": 0.01479704026132822
+      },
+      {
+        "layer": 15,
+        "skip_rate": 0.17606478929519653,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.8164367079734802,
+        "median_head_skip": 0.04119176045060158
+      },
+      {
+        "layer": 16,
+        "skip_rate": 0.30346429347991943,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.9858028292655945,
+        "median_head_skip": 0.1365726888179779
+      },
+      {
+        "layer": 17,
+        "skip_rate": 0.05163967236876488,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.4651069641113281,
+        "median_head_skip": 0.0009998000459745526
+      },
+      {
+        "layer": 18,
+        "skip_rate": 0.21729403734207153,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.6544691324234009,
+        "median_head_skip": 0.13297340273857117
+      },
+      {
+        "layer": 19,
+        "skip_rate": 0.20887072384357452,
+        "min_head_skip": 0.00019996000628452748,
+        "max_head_skip": 0.8190361857414246,
+        "median_head_skip": 0.059988003224134445
+      },
+      {
+        "layer": 20,
+        "skip_rate": 0.26910868287086487,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.8482303619384766,
+        "median_head_skip": 0.17236553132534027
+      },
+      {
+        "layer": 21,
+        "skip_rate": 0.17096580564975739,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.556688666343689,
+        "median_head_skip": 0.11797640472650528
+      },
+      {
+        "layer": 22,
+        "skip_rate": 0.18055139482021332,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.9000200033187866,
+        "median_head_skip": 0.0665866807103157
+      },
+      {
+        "layer": 23,
+        "skip_rate": 0.13188612461090088,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.5458908081054688,
+        "median_head_skip": 0.09178164601325989
+      },
+      {
+        "layer": 24,
+        "skip_rate": 0.12195061147212982,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.6820635795593262,
+        "median_head_skip": 0.04379124194383621
+      },
+      {
+        "layer": 25,
+        "skip_rate": 0.11721405386924744,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.44191160798072815,
+        "median_head_skip": 0.06118776276707649
+      },
+      {
+        "layer": 26,
+        "skip_rate": 0.16296739876270294,
+        "min_head_skip": 0.0,
+        "max_head_skip": 0.8580284118652344,
+        "median_head_skip": 0.0
+      },
+      {
+        "layer": 27,
+        "skip_rate": 0.3409692943096161,
+        "min_head_skip": 0.00019996000628452748,
+        "max_head_skip": 0.8232353329658508,
+        "median_head_skip": 0.2503499388694763
+      }
+    ]
+  }
+]
