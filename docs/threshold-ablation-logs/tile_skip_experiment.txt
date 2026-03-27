@@ -1,0 +1,35 @@
+Tile-Level Sparse V Skip Experiment
+Date: 2026-03-27
+Hardware: Apple M5 Max 128GB
+
+Hypothesis: Skip entire V tile when max attention weight across all C positions < τ.
+Avoids per-position branch overhead for fully-negligible tiles.
+
+Implementation: Added tile_max_w scan before FOR_UNROLL cc loop.
+If tile_max_w < 1e-6f, skip entire V accumulation for that tile.
+Per-position sparse V still applies inside for mixed tiles.
+
+PPL: 6.1756 (identical to per-position-only sparse V)
+
+=== MoE (Qwen3.5-35B-A3B Q8_0) ===
+
+| Test | Tile skip | Per-position only | Delta |
+|------|-----------|-------------------|-------|
+| Short (tg128) | 76.78 | 76.11 | +0.9% |
+| pp8192+tg128 | 1456.50 | — | — |
+| pp16384+tg128 | 1393.42 | — | — |
+| pp32768+tg128 | 1120.08 | 1113.77 | +0.6% |
+
+=== Dense (Qwen3.5-27B Q8_0) ===
+
+| Test | Tile skip | Per-position only | Delta |
+|------|-----------|-------------------|-------|
+| Short (tg128) | 16.77 | 16.73 | +0.2% |
+| pp8192+tg128 | 295.94 | 298.27 | -0.8% |
+| pp16384+tg128 | 313.51 | 316.98 | -1.1% |
+
+RESULT: Marginal on MoE (+0.6-0.9%), slightly negative on dense (-0.8-1.1%).
+The tile max scan loop (8 reads from ss[]) costs more than it saves when most
+tiles have at least one non-negligible position.
+
+VERDICT: NOT WORTH KEEPING. Reverted.
