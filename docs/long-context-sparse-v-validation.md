@@ -34,11 +34,13 @@ Each context length tested with three sequential runs: q8_0 baseline first (sani
 
 **wikitext-103 (516MB corpus, 10× statistical power):**
 
-| Context | Chunks | q8_0 baseline | turbo3 + sparse V | turbo3 no sparse V | Sparse V Δ | vs q8_0 |
-|---------|--------|---------------|--------------------|--------------------|------------|---------|
-| 32K | 50 | 7.0638 ± 0.021 | 7.1796 ± 0.021 | 7.1796 ± 0.021 | **0.0000** | +1.6% |
+| Context | Chunks | q8_0 | q4_0 | turbo3 + sparse V | turbo3 no sparse V | Sparse V Δ |
+|---------|--------|------|------|--------------------|--------------------|------------|
+| 32K | 50 | 7.0638 ± 0.021 | 7.0857 ± 0.021 | 7.1796 ± 0.021 | 7.1796 ± 0.021 | **0.0000** |
 
 The 50-chunk wikitext-103 run is the strongest validation: tight CI (±0.021), large corpus, high chunk count. Sparse V delta is exactly 0.0000.
+
+**Note on q4\_0:** Included as a reference baseline. No optimization or tuning effort was applied to q4\_0 in this work. Development and optimization focused on q8\_0 and turbo3 paths. turbo3 uses fewer bits (3.5 vs 4.0), so slightly higher PPL relative to q4\_0 is expected.
 
 ### Dense (Qwen3.5-27B Q8_0)
 

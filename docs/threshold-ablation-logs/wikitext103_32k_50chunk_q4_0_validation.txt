@@ -1,0 +1,58 @@
+Sparse V 50-Chunk 32K PPL Validation — q4_0 Baseline (wikitext-103)
+====================================================================
+
+Date: 2026-03-27
+Hardware: Apple M5 Max 128GB
+Model: Qwen3.5-35B-A3B Q8_0 (MoE)
+Branch: feature/turboquant-kv-cache @ a52586e (post-PR#4-revert)
+Corpus: wikitext-103-raw-v1 train split (516MB, ~135M tokens)
+Context: 32768 tokens
+Chunks: 50
+Sparse V threshold: τ = 1e-6
+
+Methodology:
+  - Three sequential runs on clean GPU (no competing processes)
+  - q4_0 baseline first to compare against a widely-used 4-bit KV cache
+  - turbo3 OFF second to isolate TurboQuant compression overhead
+  - turbo3 ON third to isolate sparse V effect
+  - All runs use identical corpus, context length, chunk count, and model
+
+Commands:
+  WIKI103=wikitext-103-raw/wiki.train.raw
+
+  # 1. q4_0 baseline
+  llama-perplexity -m $MODEL -f $WIKI103 -c 32768 \
+    -ctk q4_0 -ctv q4_0 -fa on --chunks 50 -ngl 99
+
+  # 2. turbo3 sparse V OFF
+  TURBO_SPARSE_V=0 llama-perplexity -m $MODEL -f $WIKI103 -c 32768 \
+    -ctk turbo3 -ctv turbo3 -fa on --chunks 50 -ngl 99
+
+  # 3. turbo3 sparse V ON
+  llama-perplexity -m $MODEL -f $WIKI103 -c 32768 \
+    -ctk turbo3 -ctv turbo3 -fa on --chunks 50 -ngl 99
+
+Results:
+  1. q4_0 baseline (4-bit KV, no TurboQuant, no sparse V):
+     PPL = 7.0857 +/- 0.02098
+
+  2. TurboQuant turbo3 WITHOUT sparse V (compression only, no skip):
+     PPL = 7.1796 +/- 0.02135
+
+  3. TurboQuant turbo3 WITH sparse V (compression + attention-gated V skip):
+     PPL = 7.1796 +/- 0.02135
+
+Analysis:
+  - q4_0 baseline: 7.0857 (vs q8_0 from prior run: 7.0638, delta +0.31%)
+  - TurboQuant compression overhead vs q4_0: +1.33%
+  - TurboQuant compression overhead vs q8_0: +1.64%
+  - Sparse V effect (run 3 vs run 2): 0.0000
+  - turbo3 uses 3.5 bits vs q4_0's 4.0 bits, so slightly higher PPL is expected
+  - Note: turbo3 OFF result (7.1796) matches the q8_0-baseline run exactly,
+    confirming reproducibility across runs
+
+Combined 50-chunk 32K results (all wikitext-103):
+  q8_0 (8-bit):        7.0638 +/- 0.021
+  q4_0 (4-bit):        7.0857 +/- 0.021  (+0.31% vs q8_0)
+  turbo3 (3.5-bit):    7.1796 +/- 0.021  (+1.64% vs q8_0)
+  turbo3 + sparse V:   7.1796 +/- 0.021  (+1.64% vs q8_0, sparse V delta: 0.0000)

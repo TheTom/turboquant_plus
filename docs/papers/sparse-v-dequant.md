@@ -105,11 +105,12 @@ Unlike most quantization-aware optimizations, sparse V requires no model-specifi
 ### 4.1 Setup
 
 - **Hardware:** Apple M5 Max, 128GB unified memory, 546 GB/s bandwidth
-- **Model:** Qwen3.5-35B-A3B (MoE), Q8_0 weight quantization
-- **KV cache:** TurboQuant turbo3 (3.5-bit, 4.6× compression)
+- **Models:** Qwen3.5-35B-A3B (MoE), Qwen3.5-27B (dense), Qwen3-1.7B (attention inspection)
+- **KV cache formats:** turbo3 (3.5-bit TurboQuant), q8\_0 (8-bit), q4\_0 (4-bit)
 - **Framework:** llama.cpp with Metal flash attention kernels
-- **Baseline:** turbo3 decode without sparse V (main branch)
-- **Quality metric:** Perplexity on WikiText-2 (8-chunk and 32-chunk)
+- **Baselines:** q8\_0 (primary), q4\_0 (reference), turbo3 without sparse V (isolates sparse V effect)
+- **Datasets:** WikiText-2 (multi-context), WikiText-103 (high-chunk-count 32K validation)
+- **Quality metrics:** Perplexity with confidence intervals, KL divergence vs f16, same-top-p agreement
 - **Retrieval metric:** Needle-in-a-haystack (NIAH), single and multi-key
 
 ### 4.2 Decode Throughput
@@ -138,16 +139,18 @@ Sparse V perplexity (6.176) is actually *lower* (better) than baseline turbo3 (6
 
 **Long-context validation:** The c=512 result above is a no-regression sanity check — at 512 tokens, sparse V skips ~6% of positions and has negligible effect. To validate under conditions where sparse V is actively skipping positions, we ran perplexity at longer context lengths with increased chunk counts for statistical power. q8\_0 baselines were run first to confirm corpus/chunk sanity before evaluating turbo3.
 
-| Context | Chunks | Corpus | q8\_0 | turbo3 + sparse V | turbo3 no sparse V | Sparse V Δ | vs q8\_0 |
-|---------|--------|--------|-------|--------------------|--------------------|------------|---------|
-| 8K | 20 | wikitext-2 | 5.4592 | 5.5195 | 5.5195 | 0.0000 | +1.1% |
-| 16K | 10 | wikitext-2 | 5.0008 | 5.0630 | 5.0630 | 0.0000 | +1.2% |
-| 32K | 5 | wikitext-2 | 6.0274 | 6.1103 | 6.1103 | 0.0000 | +1.4% |
-| **32K** | **50** | **wikitext-103** | **7.0638** | **7.1796** | **7.1796** | **0.0000** | **+1.6%** |
+| Context | Chunks | Corpus | q8\_0 | q4\_0 | turbo3 + sparse V | turbo3 no sparse V | Sparse V Δ |
+|---------|--------|--------|-------|-------|--------------------|--------------------|------------|
+| 8K | 20 | wikitext-2 | 5.4592 | — | 5.5195 | 5.5195 | 0.0000 |
+| 16K | 10 | wikitext-2 | 5.0008 | — | 5.0630 | 5.0630 | 0.0000 |
+| 32K | 5 | wikitext-2 | 6.0274 | — | 6.1103 | 6.1103 | 0.0000 |
+| **32K** | **50** | **wikitext-103** | **7.0638** | **7.0857** | **7.1796** | **7.1796** | **0.0000** |
 
-The 50-chunk wikitext-103 run (516MB corpus, CI ±0.021) provides 10× the statistical power of the wikitext-2 runs. Sparse V delta remains exactly 0.0000.
+The 50-chunk wikitext-103 run (516MB corpus, CI ±0.021) provides 10× the statistical power of the wikitext-2 runs. Sparse V delta remains exactly 0.0000 across all tested conditions.
 
-All runs use $\tau = 10^{-6}$. PPL is numerically identical with and without sparse V at every context length tested in this setup. The +1.1–1.4% gap vs q8\_0 is the underlying TurboQuant compression overhead — consistent across context lengths and unaffected by sparse V.
+All runs use $\tau = 10^{-6}$. PPL is numerically identical with and without sparse V at every context length and corpus tested in this setup. The +1.1–1.6% gap vs q8\_0 is the underlying TurboQuant compression overhead — consistent across context lengths and unaffected by sparse V.
+
+**Note on q4\_0:** q4\_0 results are included as a reference baseline. No optimization or tuning effort was applied to q4\_0 in this work. Development and optimization were focused on q8\_0 and turbo3 paths. turbo3 uses fewer bits (3.5 vs 4.0), so slightly higher PPL relative to q4\_0 is expected.
 
 **Direct skip-rate measurement** (Qwen3-1.7B, eager attention with `output_attentions=True`):
 
