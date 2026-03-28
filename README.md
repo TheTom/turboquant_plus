@@ -377,7 +377,9 @@ Issues and PRs welcome. The main areas where help is needed:
 
 ## Support
 
-If you find this work useful, you can support it via [GitHub Sponsors](https://github.com/sponsors/TheTom).
+If you find this work useful, you can support it via [GitHub Sponsors](https://github.com/sponsors/TheTom) or BTC:
+
+BTC: bc1qsfaaf6mkz2yxx2vavg2n0zgsf3qj25uh94t83rwuq7de67dey05sc3tgjx
 
 ## License
 
