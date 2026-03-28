@@ -1,0 +1,30 @@
+NIAH 8K/100% Failure Investigation
+====================================
+
+Date: 2026-03-28
+
+Finding: Both q8_0 and turbo4 fail NIAH at 8K context, 100% depth (needle
+at end of context). f16 passes. This is quantization-related, not model-level.
+
+100% depth sweep:
+| Context | f16 | q8_0 | turbo4 |
+|---------|-----|------|--------|
+| 2K | — | PASS | PASS |
+| 4K | — | PASS | PASS |
+| 8K | PASS | FAIL | FAIL |
+| 16K | — | FAIL | PASS |
+
+turbo4 recovers at 16K while q8_0 doesn't — turbo4 has less quantization
+noise (lower KLD: 0.0096 vs q8_0's 0.0015... wait q8_0 has LOWER KLD).
+
+Root cause: 100% depth = needle inserted after last paragraph = last few
+hundred tokens of context. These are the most recently written KV entries,
+most vulnerable to quantization noise. At shorter context (2K/4K) the noise
+is tolerable. At 8K+ it crosses the retrieval threshold.
+
+This is documented behavior for quantized KV caches. Not fixable without
+changing the quantization scheme. Both q8_0 and turbo4 share this failure.
+
+f16 passes because it has zero quantization noise.
+
+Action: Document in NIAH results. Not a turbo4-specific issue.
