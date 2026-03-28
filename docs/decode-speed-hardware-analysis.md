@@ -229,6 +229,39 @@ Flipped computation: instead of per-element centroid lookup, iterate over 4 cent
 | 13 | Fused block dot | 8.1 | 33% | 64 comparisons |
 | — | Ceiling (no dequant) | 24.5 | 100% | Zero overhead |
 
+## Extended Experiments (approach 15, 2026-03-28)
+
+| # | Approach | M2 8K tok/s | vs 4-mag | Key finding |
+|---|----------|-------------|---------|-------------|
+| 15 | SMEM pre-dequant (threadgroup memory tile) | 10.17 | -33% | Threadgroup store/load overhead > constant cache savings |
+
+### SMEM pre-dequant details
+Pre-dequantize entire K/V tiles (C=32 × DK=128 = 8KB half) into threadgroup memory before dot products. All 32 threads cooperatively dequant C cache positions, barrier, then compute from SMEM.
+
+**Why it failed**: The FA vec kernel distributes work so each thread operates on unique data (DK4/NL=1 dequant per thread per cache position). Each dequanted value is used exactly once by its producer thread. Caching in SMEM adds 64 threadgroup memory ops (32 stores + 32 loads) per thread per outer iteration + barrier, for zero reduction in constant LUT reads. Additionally, separating dequant from compute destroys the ILP that makes the 4-mag LUT work (constant reads overlapped with ALU). At short context, the overhead is negligible (+1.8%), but at 8K it's catastrophic (-51.5%).
+
+**Lesson**: SMEM only helps when data is shared between threads. Don't separate what the hardware pipelines together.
+
+### Updated tally: 15 approaches tested
+
+| Rank | Approach | M2 8K | vs Ceiling | Category |
+|------|----------|-------|-----------|----------|
+| 1 | 4-mag LUT | 15.1 | 62% | 4 constant reads |
+| 2 | simd_shuffle | 14.7 | 60% | Cross-lane transfer |
+| 3 | Batched extract (8-LUT) | 13.7 | 56% | 8 constant reads |
+| 4 | Inline FA block | 13.5 | 55% | Inlined dequant |
+| 5 | Deferred norm | 12.9 | 53% | Loses ILP |
+| 6 | 2-pair half2 | 12.0 | 49% | 2 reads + ternary |
+| 7 | Select chain | 11.9 | 49% | Pure branches |
+| 8 | Bit-arithmetic | 11.6 | 47% | Pure ALU |
+| 9 | FMA branchless | 11.4 | 47% | fma() chain |
+| 10 | Main (8-LUT) | 10.95 | 45% | Baseline |
+| 11 | Named-reg ternary | 10.3 | 42% | Registers + branches |
+| 12 | Non-vec FA | 10.2 | 42% | Wrong kernel |
+| 13 | **SMEM pre-dequant** | **10.17** | **41%** | **Threadgroup cache** |
+| 14 | Fused block dot | 8.1 | 33% | 64 comparisons |
+| — | Ceiling (no dequant) | 24.5 | 100% | Zero overhead |
+
 ## M5 Max Long-Context Discovery (2026-03-27)
 
 ### The constant cache bottleneck hits M5 Max too at long context
