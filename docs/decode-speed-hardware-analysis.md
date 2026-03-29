@@ -414,6 +414,28 @@ It hurts when:
 
 This suggests a **model-size-adaptive dispatch**: use SMEM pre-dequant for small models (≤3B), 4-mag LUT for large models (≥7B). The crossover is somewhere in between.
 
+## SMEM Pre-Dequant on M5 Max — CATASTROPHIC (2026-03-28 night)
+
+Tested SMEM on M5 Max (Apple10) with Qwen3.5-35B-A3B MoE. Opposite of M2 — massive regression.
+
+### Qwen3.5-35B-A3B Q8_0, M5 Max, decode (tg128 t/s)
+
+| Context | turbo3 baseline | turbo3 SMEM | turbo4 baseline | turbo4 SMEM | q8_0 |
+|---------|----------------|-------------|-----------------|-------------|------|
+| short | 78.47 | **18.39 (-77%)** | 80.40 | **16.93 (-79%)** | 85.48 |
+| 16K | 78.64 | **16.47 (-79%)** | 79.45 | **15.58 (-80%)** | 78.09 |
+| 32K | 78.17 | **16.19 (-79%)** | 80.64 | **16.29 (-80%)** | 86.83 |
+
+### Why M5 is opposite of M2
+
+- **M5's constant cache (Apple10) is already fast** — handles 8-way divergent reads with minimal penalty. SMEM replaces something that's nearly free with something that costs threadgroup stores + barriers + loads.
+- **SMEM kills occupancy** — the threadgroup memory allocation reduces the number of active threadgroups per GPU core. On M5's larger kernels (35B MoE), this is devastating.
+- **M2 benefited because its constant cache is slower** — the tradeoff (SMEM overhead vs slow constant reads) was marginally positive on M2 for small models. On M5, the constant cache is fast enough that the SMEM overhead dominates completely.
+
+### Verdict: SMEM is dead for M5
+
+Do NOT ship SMEM pre-dequant for any M5 configuration. The +4% on M2 small models is not worth the complexity or the risk of M5 regression. SMEM pre-dequant is a net negative optimization.
+
 ## Final Conclusion: M2 Decode Ceiling (2026-03-28)
 
 **20 approaches tested + 1 corrected re-run. The 4-mag LUT is the M2 ceiling for large models. SMEM pre-dequant adds ~2-4% for small models.**
