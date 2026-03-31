@@ -316,6 +316,7 @@ Ratio:               1.000 exactly
 - **NumPy** >= 1.24, **SciPy** >= 1.10
 - **cmake** + C/C++ compiler (for llama.cpp build)
 - **Xcode Command Line Tools** (macOS Metal build)
+- **Optional**: `mlx` for the Apple Silicon MLX backend prototype
 - **Optional**: `torch`, `transformers`, `accelerate` (~4GB download, for real model validation)
 
 ### Install the Python Prototype
@@ -328,6 +329,12 @@ pip install -e ".[dev]"
 
 # Verify — should print "141 passed"
 python3 -m pytest tests/ -v
+```
+
+On Apple Silicon, install the optional MLX backend dependencies with:
+
+```bash
+pip install -e ".[dev,mlx]"
 ```
 
 ### Run the Demo
@@ -450,6 +457,7 @@ turboquant/
 tests/                 # 14 test files, 500+ tests
 benchmarks/
 ├── demo.py                       # Quick compression demo
+├── benchmark_mlx_backend.py      # NumPy vs MLX backend benchmark
 ├── run_benchmark.py              # Server-based benchmark runner
 ├── benchmark_results.md          # Full benchmark report
 ├── benchmark_llama.sh            # llama.cpp benchmark script
