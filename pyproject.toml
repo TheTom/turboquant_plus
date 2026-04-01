@@ -115,3 +115,11 @@ build-backend = "setuptools.build_meta"
 [tool.pytest.ini_options]
 # Refract's tests are the ones gating wheel releases.
 testpaths = ["refract/tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
