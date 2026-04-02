@@ -250,6 +250,14 @@ for i in range(boundary, n_layers - boundary):
 ./build/bin/llama-quantize --allow-requantize --tensor-type-file config_i.txt \
   models/qwen3.5-27b-q8_0.gguf models/qwen3.5-27b-config-i.gguf Q8_0
 
+# Show size before/after
+python3 -c "
+import os
+src = os.path.getsize('models/qwen3.5-27b-q8_0.gguf') / (1024**3)
+dst = os.path.getsize('models/qwen3.5-27b-config-i.gguf') / (1024**3)
+print(f'Before: {src:.2f} GB  ->  After: {dst:.2f} GB  ({(1-dst/src)*100:.0f}% smaller)')
+"
+
 # 4. Benchmark — run all 3 and paste the output in the PR
 ./build/bin/llama-bench -m models/qwen3.5-27b-q8_0.gguf -fa 1 -ngl 99 -p 512 -n 128
 ./build/bin/llama-bench -m models/qwen3.5-27b-config-i.gguf -fa 1 -ngl 99 -p 512 -n 128
