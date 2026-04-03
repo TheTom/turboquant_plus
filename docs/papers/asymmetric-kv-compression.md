@@ -272,6 +272,14 @@ These findings have been independently confirmed by multiple researchers:
 - @varjoranta validated turbo4-resurrection findings via ablation on A100 with Qwen3-8B, confirming our paper's predictions about compression quality tradeoffs
 - Community testing across H100, A100, A4000, DGX Spark (GB10) confirms our findings that symmetric turbo3 on sensitive models produces garbage, asymmetric fixes it
 
+**@adrianosousa** — [M4 Pro 24GB, Metal, 14 configurations](https://github.com/ggml-org/llama.cpp/discussions/20969#discussioncomment-16441614) (2026-04-03):
+- Independent Metal implementation with Lloyd-Max codebook quantization (block_size=128, head_dim-aligned FA integration)
+- Qwen2.5-7B Q4_K_M: asymmetric q8_0-K/4bit-V = +0.26% PPL at 61% KV savings. Symmetric 4-bit = PPL 4127 (catastrophic). Directly confirms our core finding
+- Qwen3-1.7B Q8_0: asymmetric actually IMPROVES PPL by -0.63% (regularization effect from q8_0 K)
+- BitNet compound case (TQ2_0 weights + compressed KV): symmetric 4-bit works on BitNet (+0.33%) because BitNet K magnitudes are naturally smaller. First compound extreme quantization test
+- NIAH passes at 32K across all 14 configs including catastrophic-PPL symmetric configs. Retrieval and generation quality degrade independently
+- Concludes "Asymmetric q8_0-K / 4bit-V should be the default recommendation" — matches our paper's recommendation exactly
+
 ---
 
 ## 8. Limitations
