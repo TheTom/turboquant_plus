@@ -123,15 +123,64 @@ Weight compression and TurboQuant KV compression stack with no additional penalt
 | Config I + turbo4 KV (27B) | Community (CUDA) (dual 4090) | Confirmed independently |
 | TQ4_1S + turbo3 KV (8B, 100K ctx) | Community (RTX 4090) | 5.8 GiB total, turbo3 actually faster than f16 at long ctx |
 
-### Independent Validation (TurboQuantDC)
+### Independent Validation — TurboQuantDC (662 tests, RTX 4090)
 
-[Independent implementation](https://github.com/dhawalc/turboQuantDC) — independent Python/PyTorch implementation (662 tests, MIT license). Key findings:
+An [independent implementation](https://github.com/dhawalc/turboQuantDC) built from scratch in Python/PyTorch (MIT license) tested TQ4_1S weight compression + TurboQuant KV stacking and ran a 600+ configuration sweep. This is the most comprehensive independent validation of the approach.
 
-- **70B on single 4090:** turbo3 KV extends context 4x (4K→16K)
-- **8B TQ4_1S + turbo3:** 100K context in 5.8 GiB total
-- **turbo3 faster than f16** at long context (86.5 vs 78.4 t/s at 8K — less VRAM pressure)
-- **PPL impact:** turbo3 KV adds +0.67%, turbo4 adds +0.36%
-- **Independently confirmed:** boundary layer protection, QJL harmful for autoregressive, per-head bit sensitivity
+#### TQ4_1S Weight + turbo3 KV Stacking (Llama 3.1 8B, RTX 4090)
+
+| Weight | Context | KV Config | Decode t/s | Notes |
+|--------|--------:|-----------|----------:|-------|
+| TQ4_1S | 8,192 | f16 | 78.4 | |
+| TQ4_1S | 8,192 | turbo3 | **86.5** | **turbo3 faster** (less VRAM pressure) |
+| TQ4_1S | 48,000 | f16 | 72.9 | near f16 ceiling |
+| TQ4_1S | 56,000 | f16 | **OOM** | f16 cannot allocate |
+| TQ4_1S | 65,536 | turbo3 | **85.8** | turbo3 still running |
+| TQ4_1S | 100,000 | turbo3 | 72.7 | |
+| TQ4_1S | 112,000 | turbo3 | **OOM** | turbo3 ceiling |
+
+turbo3 extends max context from ~48K to ~100K (2.1x) on the same GPU.
+
+#### VRAM Budget (Llama 3.1 8B)
+
+| Config | Weight | KV @ 32K | Total | Max Context |
+|--------|--------|----------|-------|-------------|
+| Q4_K_M + f16 KV | 4.58G | ~4.0G | ~8.6G | ~48K |
+| TQ4_1S + f16 KV | 4.77G | ~4.0G | ~8.8G | ~48K |
+| TQ4_1S + turbo3 | 4.77G | ~1.0G | **~5.8G** | **~100K** |
+| TQ3_1S + turbo3 | 3.90G | ~1.0G | **~4.9G** | **~110K+ (est)** |
+
+#### 70B on Single RTX 4090 (KV compression only, Q2_K weights)
+
+| Context | f16 KV | turbo3 KV | Notes |
+|--------:|-------:|----------:|-------|
+| 2,048 | 1.94 t/s | **2.87 t/s** | turbo3 48% faster |
+| 8,192 | **OOM** | **2.68 t/s** | f16 cannot allocate |
+| 16,384 | **OOM** | **2.83 t/s** | turbo3 still running |
+
+turbo3 extends 70B max context from ~4K to ~16K (4x) on a single 4090.
+
+#### PPL (wikitext-2, Llama 3.1 8B)
+
+| Weight | KV Config | PPL | KV Delta |
+|--------|-----------|-----|----------|
+| Q4_0 | f16 | 7.50 | baseline |
+| Q4_0 | q8_0/turbo3 | 7.55 | **+0.67%** |
+| Q4_0 | q8_0/turbo4 | 7.53 | **+0.36%** |
+| TQ3_1S | f16 | 9.46 | baseline (TQ3) |
+| TQ3_1S | q8_0/turbo3 | 9.58 | +1.22% |
+
+#### Research Findings (600+ config sweep)
+
+| Finding | Detail |
+|---------|--------|
+| Boundary layer protection | First 2 + last 2 layers at higher precision recovers ~90% of quality gap. Confirmed independently. |
+| QJL harmful | Paper's QJL stage hurts autoregressive quality. Random projection variance compounds across decode steps. |
+| ResidualQuant | Drop-in replacement for QJL: store `sign(r_rotated)` directly. Same 1-bit budget, no random projection. Matches f16 quality. |
+| Per-head bit allocation | High-entropy attention heads need +1 bit. Uniform bits waste budget on low-entropy heads. |
+| FP16 hot window | Keeping last 64–128 tokens at f16 eliminates error accumulation. ~0% cost at long context (128/32K = 0.4%). |
+
+**Note:** TQ4_1S PPL evaluation crashed on this tester's setup (`ggml_backend_tensor_copy` assert). Speed benchmarks work fine. Under investigation.
 
 ---
 
