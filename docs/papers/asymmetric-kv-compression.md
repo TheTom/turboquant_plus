@@ -300,6 +300,15 @@ These findings have been independently confirmed by multiple researchers:
 - Consistent with earlier temp=0.6 result (22/65 vs 22/65, 9:9 divergence)
 - Confirms: **no TBQ degradation on head_dim=128 models** — the 30.8% overall accuracy is a Qwen3-14B Q4_K_M model limitation, not a cache fidelity issue
 - Notable: symmetric turbo3 works on Qwen3-14B Q4_K_M (unlike Qwen2.5-7B Q4_K_M which is catastrophic). Model-specific sensitivity, not universal Qwen vulnerability
+- **UPDATE (2026-04-04):** @primoco [identified root cause](https://github.com/ggml-org/llama.cpp/discussions/20969#discussioncomment-16449270) of the low 30.8% F16 baseline — ctx_size 16384 < Qwen3-14B native context 32768 triggers RoPE frequency scaling that degrades attention. At native ctx_size 32768: **f16/f16 = 100% (91/91), f16/tbq4_1 = 100% (91/91), q8_0/tbq4_1 = 100% (91/91)**. Zero accuracy cost from TurboQuant with correct setup. Benchmark: [eullm/turboquant_math_accuracy.py](https://github.com/eullm/eullm/blob/main/bench/turboquant_math_accuracy.py)
+
+**@primoco (eullm)** — [Qwen3-14B Q4_K_M + Qwen3.5-35B, task-level math accuracy](https://github.com/ggml-org/llama.cpp/discussions/20969#discussioncomment-16449270) (2026-04-04):
+- Diagnosed AmesianX's 30.8% F16 baseline: **RoPE frequency scaling** when ctx_size < model native context. Not a cache issue — affects F16 equally
+- At native ctx_size 32768: all three configs (f16/f16, f16/tbq4_1, q8_0/tbq4_1) achieve **100% accuracy (91/91)** on math benchmark
+- Speed: f16/f16 67.0 t/s, f16/tbq4_1 63.9 t/s (-4.6%), q8_0/tbq4_1 62.9 t/s (-6.1%). Minimal overhead
+- Confirmed @TheTom's Qwen3.5-35B result: identical F16/turbo3 accuracy with 2.7x compression
+- Note: tbq4_1 (blck_size=128) must be specified explicitly for head_dim=128 models — auto-detection doesn't propagate through Rust API bindings
+- Filed separate issue on ggerganov/llama.cpp about ctx_size/F16 RoPE behavior
 
 **@redwolfweb** — [Qwen3.5-27B Q4_K_M, RTX 5090, Debian 13](https://github.com/TheTom/llama-cpp-turboquant/issues/47#issuecomment-4185458440) (2026-04-04):
 - Confirmed head_dim=256 fix works across **all 6 K/V combinations**: turbo2/turbo2, turbo3/turbo3, turbo3/q8_0, q8_0/turbo3, turbo2/q8_0, q8_0/turbo2
