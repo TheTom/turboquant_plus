@@ -270,6 +270,7 @@ These findings have been independently confirmed by multiple researchers:
 - PR author (@vibhavagarwal5) explicitly cites turboquant_plus for boundary layer implementation and asymmetric KV cache
 - @Alberto-Codes independently diagnosed the 0% gsm8k quality failure as the symmetric K/V compression problem documented in our asymmetric paper
 - @varjoranta validated turbo4-resurrection findings via ablation on A100 with Qwen3-8B, confirming our paper's predictions about compression quality tradeoffs
+- @varjoranta followed up with [fix PR #1](https://github.com/vibhavagarwal5/vllm/pull/1) (2026-04-02): changed default `value_quant_bits` from 4 to 8 (FP8 E4M3). One-line fix that resolves 0% gsm8k and garbage output. @MidasMining independently confirmed 100% on 14-check reasoning benchmark with FP8 values. Cites @TheTom (turbo4-resurrection) as source for "value precision is the quality bottleneck." Note: their fix uses more bits; our approach achieves better compression at equal quality via WHT rotation
 - Community testing across H100, A100, A4000, DGX Spark (GB10) confirms our findings that symmetric turbo3 on sensitive models produces garbage, asymmetric fixes it
 
 **@adrianosousa** — [M4 Pro 24GB, Metal, 14 configurations](https://github.com/ggml-org/llama.cpp/discussions/20969#discussioncomment-16441614) (2026-04-03):
