@@ -569,6 +569,21 @@ TurboQuant KV cache compression is being ported to Apple's [MLX framework](https
 | turbo4 fused | 254.7 (+22x) | 53.9 | 56% |
 | turbo4 asymmetric | 241.1 (+21x) | 55.2 | 58% |
 
+**Qwen3.5-27B Dense 8bit (16/64 KV layers):**
+
+| Config | PPL | PPL Delta | Decode | vs Baseline |
+|--------|-----|-----------|--------|-------------|
+| Baseline | 1.4800 | — | 17.9 | 100% |
+| turbo4 asymmetric | 1.5082 | +1.91% | 15.5 | 87% |
+| turbo4 symmetric | 1.5219 | +2.83% | 15.4 | 86% |
+
+**Dense models (short context, deferred compression):**
+
+| Model | Baseline Decode | turbo4 Decode | PPL Delta |
+|-------|----------------|---------------|-----------|
+| Qwen2.5-7B 8bit | 64.2 | 64.1 | 0.00% |
+| phi-4 8bit | 32.9 | 32.7 | 0.00% |
+
 ### What's implemented
 - TurboQuant encode/decode using `mx.hadamard_transform` (MLX built-in)
 - Fused Metal kernels for encode, decode, and compressed-domain attention
