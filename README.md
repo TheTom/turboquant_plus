@@ -690,7 +690,16 @@ pip install mlx-lm
 | 64K | 95.1 | 95.5 | **100.5%** | 74.2% |
 | 128K | 74.5 | 74.9 | **100.6%** | 74.2% |
 
-Output is word-for-word identical to baseline at all context lengths. V savings are from TurboQuant 4-bit compression (SRHT + Lloyd-Max). FP16 V retained for attention speed; compressed V stored for memory recovery at long context
+Output is word-for-word identical to baseline at all context lengths. V savings are from TurboQuant 4-bit compression (SRHT + Lloyd-Max). FP16 V retained for attention speed; compressed V stored for memory recovery at long context.
+
+**V Cache Memory at Scale**
+
+| Model | Context | FP16 V | Turbo4 V | Savings |
+|-------|---------|--------|----------|---------|
+| Qwen2.5-7B | 262K | 7.5 GB | 2.0 GB | 5.5 GB |
+| Llama-70B | 131K | 21.5 GB | 5.6 GB | 15.9 GB |
+| Llama-70B | 262K | 42.9 GB | 11.2 GB | 31.7 GB |
+| Command-R+ 104B | 131K | 17.2 GB | 4.5 GB | 12.7 GB |
 
 ---
 
