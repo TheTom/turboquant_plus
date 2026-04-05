@@ -156,12 +156,18 @@ class KVCacheCompressor:
         Returns dict with original_mb, compressed_mb, ratio.
         """
         n_vectors = num_layers * num_heads * seq_len
-        original_bytes = n_vectors * self.head_dim * 2  # fp16
+        # Original KV cache stores both K and V in fp16.
+        original_bytes = n_vectors * self.head_dim * 2 * 2
 
-        # K: b bits per coord + 32-bit norm
-        k_bits_total = n_vectors * (self.head_dim * self.k_bits + 32)
-        # V: b bits per coord (no norm needed for MSE-only)
-        v_bits_total = n_vectors * self.head_dim * self.v_bits
+        # K uses full TurboQuant:
+        # - d * k_bits total quantized bits
+        # - 32-bit vector norm
+        # - 32-bit residual norm
+        k_bits_total = n_vectors * (self.head_dim * self.k_bits + 64)
+        # V uses MSE-only PolarQuant:
+        # - d * v_bits quantized bits
+        # - 32-bit vector norm
+        v_bits_total = n_vectors * (self.head_dim * self.v_bits + 32)
 
         compressed_bytes = (k_bits_total + v_bits_total) / 8
 
