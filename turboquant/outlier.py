@@ -9,11 +9,14 @@ Examples:
 - 3.5-bit: 64/128 outlier at 4b + 64/128 normal at 3b = (64×4 + 64×3)/128 = 3.5
 """
 
+import logging
 import numpy as np
 from dataclasses import dataclass
 
 from turboquant.polar_quant import PolarQuant
 from turboquant.qjl import QJL
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -92,6 +95,46 @@ class OutlierTurboQuant:
 
         # QJL on full residual
         self.qjl = QJL(d, seed=seed + 1000)
+
+    def calibrate(self, calibration_vectors: np.ndarray) -> None:
+        """Update outlier/normal channel split using calibration data.
+
+        Computes per-channel RMS over the calibration samples and identifies
+        outlier channels dynamically: channels where RMS > 3× median RMS.
+        Updates self.outlier_idx and self.normal_idx accordingly.
+
+        The existing fixed-split behaviour (channels 0..n_outlier-1 as outliers)
+        is used when this method is never called.
+
+        Args:
+            calibration_vectors: 2D array of shape (n_samples, d) used to
+                estimate per-channel activation magnitudes.
+        """
+        assert calibration_vectors.ndim == 2, (
+            f"calibration_vectors must be 2D (n_samples, d), got {calibration_vectors.ndim}D"
+        )
+        assert calibration_vectors.shape[1] == self.d, (
+            f"calibration_vectors.shape[1]={calibration_vectors.shape[1]} != d={self.d}"
+        )
+
+        # Per-channel RMS: sqrt(mean(x^2)) over samples
+        per_channel_rms = np.sqrt(np.mean(calibration_vectors ** 2, axis=0))  # (d,)
+
+        median_rms = np.median(per_channel_rms)
+        threshold = 3.0 * median_rms
+
+        outlier_mask = per_channel_rms > threshold
+        n_found = int(outlier_mask.sum())
+
+        logger.info(
+            "calibrate(): found %d outlier channels out of %d (threshold=%.4f, median_rms=%.4f)",
+            n_found, self.d, threshold, median_rms,
+        )
+
+        self.outlier_idx = np.where(outlier_mask)[0]
+        self.normal_idx = np.where(~outlier_mask)[0]
+        self.n_outlier = len(self.outlier_idx)
+        self.n_normal = len(self.normal_idx)
 
     def quantize(self, x: np.ndarray) -> OutlierCompressedVector:
         """Quantize with outlier channel split."""
