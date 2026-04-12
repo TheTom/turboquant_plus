@@ -13,6 +13,9 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
 ]
+mlx = [
+    "mlx>=0.31",
+]
 bench = [
     "matplotlib",
 ]
