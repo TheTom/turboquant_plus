@@ -46,6 +46,10 @@ These configurations showed promising results but have less validation depth:
 | Q8_0 weights | `-ctk q8_0 -ctv turbo2` | phi-4 +3.1% |
 | Q4_K_M, Qwen2.5-7B (AMD) | `-ctk q8_0 -ctv turbo3` | NaN on HIP (Metal gets +2.0%). HIP-specific, under investigation |
 
+> ⚠️ **WARNING: q8_0/turbo3 produces NaN on HIP/AMD with models that have large K norms**
+> (e.g. Qwen2.5-7B where K norms can reach 274). This is under active investigation.
+> **Safe AMD alternative: q8_0/turbo4.**
+
 ### Boundary V (auto-enabled for turbo2-V)
 
 A layer-aware V compression strategy that protects the first 2 + last 2 layers with q8_0-V while compressing all remaining layers with turbo2-V. **Auto-enabled when `-ctv turbo2` is set** on recent builds. Opt-out: `TURBO_LAYER_ADAPTIVE=0`. On older builds, activate with `TURBO_LAYER_ADAPTIVE=7`.
