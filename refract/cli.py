@@ -1,11 +1,11 @@
 """REFRACT v0.1 CLI.
 
 Usage:
-    python3 -m turboquant.refract.cli score \\
+    python3 -m refract.cli score \\
         --model MODEL.gguf \\
         --reference "ctk=f16,ctv=f16" \\
         --candidate "ctk=q8_0,ctv=turbo4,attn_rot_v=0" \\
-        --prompts turboquant/refract/prompts/v0.1.jsonl \\
+        --prompts refract/prompts/v0.1.jsonl \\
         --corpus ~/local_llms/llama.cpp/wikitext-2-raw/wiki.test.raw \\
         --chunks 32 -c 512 -ngl 99
 """

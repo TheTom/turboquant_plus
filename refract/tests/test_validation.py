@@ -20,15 +20,15 @@ must NOT mistake that for a pass.
 This test is integration-only: it spawns llama-cli + llama-perplexity many
 times against a 26B-A4B model and takes 30+ minutes. Run with:
 
-    pytest -m integration turboquant/refract/tests/test_validation.py
+    pytest -m integration refract/tests/test_validation.py
 
 or directly:
 
-    python3 -m turboquant.refract.cli score \\
+    python3 -m refract.cli score \\
         --model ~/local_llms/models/gemma-4-26B-A4B-Q8_0.gguf \\
         --reference 'ctk=f16,ctv=f16' \\
         --candidate 'ctk=q8_0,ctv=turbo4,attn_rot_v=0,attn_rot_k=0' \\
-        --prompts turboquant/refract/prompts/v0.1.jsonl \\
+        --prompts refract/prompts/v0.1.jsonl \\
         --corpus ~/local_llms/llama.cpp/wikitext-2-raw/wiki.test.raw \\
         --chunks 32 --measure-floor
 """
@@ -40,10 +40,10 @@ from pathlib import Path
 
 import pytest
 
-from turboquant.refract.axes.gtm import run_gtm
-from turboquant.refract.axes.kld import run_kld
-from turboquant.refract.runner import KVConfig
-from turboquant.refract.score import composite_score
+from refract.axes.gtm import run_gtm
+from refract.axes.kld import run_kld
+from refract.runner import KVConfig
+from refract.score import composite_score
 
 
 # Default paths; override via env if your model lives elsewhere.

@@ -1,7 +1,7 @@
 """Fast unit tests for REFRACT scoring math + parsers. No subprocess.
 
 Run with:
-    pytest turboquant/refract/tests/test_unit.py
+    pytest refract/tests/test_unit.py
 """
 
 from __future__ import annotations
@@ -10,10 +10,10 @@ import math
 
 import pytest
 
-from turboquant.refract.axes.gtm import _diff, _tokenize_words
-from turboquant.refract.axes.kld import _kld_to_score
-from turboquant.refract.runner import KVConfig
-from turboquant.refract.score import (
+from refract.axes.gtm import _diff, _tokenize_words
+from refract.axes.kld import _kld_to_score
+from refract.runner import KVConfig
+from refract.score import (
     MIN_FLOOR,
     band,
     composite_score,

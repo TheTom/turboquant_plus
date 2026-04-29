@@ -55,11 +55,11 @@ export LLAMA_CPP_BIN_DIR=/path/to/llama.cpp/build/bin
 ## Quickstart
 
 ```bash
-python3 -m turboquant.refract.cli score \
+python3 -m refract.cli score \
     --model ~/local_llms/models/Qwen2.5-7B-Instruct-Q8_0.gguf \
     --reference 'ctk=f16,ctv=f16' \
     --candidate 'ctk=q8_0,ctv=turbo4,attn_rot_v=0' \
-    --prompts turboquant/refract/prompts/v0.1.jsonl \
+    --prompts refract/prompts/v0.1.jsonl \
     --corpus ~/local_llms/llama.cpp/wikitext-2-raw/wiki.test.raw \
     --chunks 32 -c 512 -ngl 99 \
     --measure-floor \
@@ -143,17 +143,17 @@ It is marked `integration` because it spawns llama.cpp many times against a
 ```bash
 # Mark it in pytest.ini if not already:
 #   markers = integration: marks tests requiring llama.cpp + a real GGUF
-pytest -m integration turboquant/refract/tests/test_validation.py -s
+pytest -m integration refract/tests/test_validation.py -s
 ```
 
 Or directly via CLI:
 
 ```bash
-python3 -m turboquant.refract.cli score \
+python3 -m refract.cli score \
     --model ~/local_llms/models/gemma-4-26B-A4B-Q8_0.gguf \
     --reference 'ctk=f16,ctv=f16' \
     --candidate 'ctk=q8_0,ctv=turbo4,attn_rot_v=0,attn_rot_k=0' \
-    --prompts turboquant/refract/prompts/v0.1.jsonl \
+    --prompts refract/prompts/v0.1.jsonl \
     --corpus ~/local_llms/llama.cpp/wikitext-2-raw/wiki.test.raw \
     --chunks 32 --measure-floor
 ```
@@ -163,7 +163,7 @@ Fast unit tests (no subprocess) live in `tests/test_unit.py`.
 ## File layout
 
 ```
-turboquant/refract/
+refract/
   __init__.py
   cli.py                    # CLI entry point
   score.py                  # composite + bands + floor logic

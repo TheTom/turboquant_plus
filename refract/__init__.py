@@ -9,7 +9,7 @@ quantization quality. Replaces "lower PPL = better" with a composite of:
     (v0.1 uses corpus KLD via llama-perplexity as a proxy for trajectory KLD).
 
 See:
-  - turboquant/refract/README.md for usage.
+  - refract/README.md for usage.
   - docs/papers/attn-rotation-and-ppl-artifact.md for the motivating paper.
 """
 
