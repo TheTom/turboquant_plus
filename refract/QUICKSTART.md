@@ -140,6 +140,44 @@ cells (per-cell `base_acc = 0`) — cleaner to cap below that.
 Power users: `--rniah-lengths 4096,16384,65536` overrides the doubling
 step-up with an explicit list.
 
+### Generating the HTML report
+
+Pass `--html-out path.html` to any `score` invocation. The HTML report
+is a **single self-contained file** (~40 KB) you can email, paste into
+Discord, or open offline:
+
+```bash
+python3 -m refract.cli score \
+    --model /path/to/model.gguf \
+    --candidate "ctk=q8_0,ctv=q8_0" \
+    --prompts refract/prompts/v0.1.jsonl \
+    --json-out report.json \
+    --html-out report.html
+```
+
+What's in it:
+- Composite + per-axis stats strip at the top
+- Plain-English diagnosis (colored callout)
+- Per-axis breakdown with bars and bands
+- R-NIAH per-cell heatmap + PLAD per-perturbation table when `--full`
+- Run details (model size, hardware, KV configs)
+- Reproduce command (sanitized — no personal paths)
+- Embedded raw JSON in a `<details>` section
+- Sun/moon toggle in the top-right for light/dark mode (follows OS by default)
+
+What's bundled vs external:
+- HTML, CSS, JS, raw JSON: all inline. Works offline.
+- **Geist font: loads from Google Fonts CDN with system-ui fallback.** Online
+  → polished typography. Offline → system fonts (Apple SF / Segoe UI),
+  still readable.
+- Dark mode uses `light-dark()` CSS — needs Chrome 123+ / Safari 17.5+ /
+  Firefox 120+ (all 2024). Older browsers see the light theme cleanly;
+  dark mode is progressive enhancement.
+
+Sample reports live in [`examples/`](examples/) (4 real reports from
+the 2026-04-30 matrix run). Open one to preview the format before
+running your own.
+
 ## Step 3 — interpret the result
 
 Quick table:

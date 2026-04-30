@@ -72,7 +72,26 @@ refract score          # score a candidate KV config
 refract selftest       # 30s preflight: binaries, flags, model probe
 refract compare        # multi-report side-by-side
 refract repeatability  # run N times, report spread (stdev/range)
+refract fetch          # download wikitext-2-raw corpus to ~/.cache/refract/
 ```
+
+## Reports
+
+Every `score` run can emit two formats via `--json-out` and `--html-out`:
+
+- **JSON** (`--json-out report.json`) — schema `refract.report.v0.3.1`,
+  consumable by `refract compare` or any JSON-aware tool.
+- **HTML** (`--html-out report.html`) — single **self-contained file**
+  (~40 KB) with composite stats, diagnosis callout, per-axis bars,
+  R-NIAH heatmap, PLAD per-perturbation table, run details (hardware +
+  model + env), the sanitized repro command, and the raw JSON embedded
+  in a collapsible section. Sun/moon toggle in the top-right for
+  light/dark mode (follows OS by default). Pasteable in Discord/X.
+  See [`examples/`](examples/) for 4 real samples.
+
+The HTML uses `light-dark()` CSS (Chrome 123+ / Safari 17.5+ / Firefox
+120+) for dark mode and Google Fonts CDN for typography (system-ui
+fallback offline). Older browsers see the light theme cleanly.
 
 ## Quickstart
 
