@@ -131,19 +131,53 @@ class KVConfig:
 
 # Junk lines llama-cli prints around the actual completion. Strip them.
 # Order matters — patterns are applied in sequence to the captured stdout.
+#
+# v0.1.1 NOTE: this fork's llama-cli emits the loading spinner AND the
+# multi-line ASCII art banner to STDOUT (not stderr). v0.1's noise filter
+# missed all of that, so GTM was comparing two captured banners against each
+# other instead of two model generations. Detected when "ref" text in the
+# JSON started with "Loading model... ▄▄ ▄▄ ██ ██..." across all prompts.
 _NOISE_PATTERNS = [
     re.compile(r"^\[End thinking\].*$", re.MULTILINE),
     re.compile(r"^\[ Prompt:.*\]$", re.MULTILINE),
     re.compile(r"^Exiting\.\.\..*$", re.MULTILINE),
     re.compile(r"^llama_perf_.*$", re.MULTILINE),
     re.compile(r"^Log end$", re.MULTILINE),
+    re.compile(r"^Loading model\.\.\..*$", re.MULTILINE),
+    re.compile(r"^>\s.*$", re.MULTILINE),   # prompt echo
 ]
+
+# After noise removal, the remaining stdout typically looks like:
+#   <ASCII art banner using unicode block chars>
+#   <blank line>
+#   | The capital of France is Paris.
+#   <blank line>
+# We want only the generation body. Strategy: find the last line starting
+# with "| " (the generation prefix), strip the leading "| ", and use
+# everything from there to end-of-string. If no "| " line found, fall back
+# to stripping unicode-block-only lines.
+_BLOCK_CHARS_RE = re.compile(r"^[\s\u2580-\u259F]+$", re.MULTILINE)
+_GEN_LINE_RE = re.compile(r"^\|\s.*", re.MULTILINE)
 
 
 def _strip_noise(text: str) -> str:
-    out = text
+    # llama-cli's spinner uses backspace control chars (\x08) inside the
+    # loading line AND inside the "| " generation prefix. Strip all backspaces
+    # before any pattern matching — otherwise "|\x08 \x08[Start thinking]"
+    # never matches "^\|\s..." and the generation gets dropped.
+    out = text.replace("\x08", "")
     for pat in _NOISE_PATTERNS:
         out = pat.sub("", out)
+    # If a "| ..." generation line is present, keep only that and what
+    # follows. This handles the canonical llama-cli output shape on this fork.
+    matches = list(_GEN_LINE_RE.finditer(out))
+    if matches:
+        first_gen = matches[0].start()
+        out = out[first_gen:]
+        # Strip the leading "| " marker from each generation line
+        out = re.sub(r"^\|\s?", "", out, flags=re.MULTILINE)
+    # Drop ASCII-art banner lines (unicode block chars only)
+    out = _BLOCK_CHARS_RE.sub("", out)
     return out
 
 
@@ -182,7 +216,11 @@ def run_completion(
         "--seed", str(seed),
         "--temp", str(temperature),
         "--single-turn",      # CRITICAL — see docstring
-        "--no-conversation",  # plain completion mode (not chat template)
+        # NOTE: do NOT pass --no-conversation. This fork's llama-cli rejects
+        # it with "please use llama-completion instead" and prints help. The
+        # bug surfaces silently because the help banner is captured as the
+        # "completion" string. --single-turn alone gives plain non-interactive
+        # completion behaviour without the chat template.
         "--no-display-prompt",
         "-fa", "on",
     ]

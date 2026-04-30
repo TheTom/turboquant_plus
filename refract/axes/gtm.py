@@ -145,7 +145,14 @@ def run_gtm(
     full_match_rate = matches / n
     median_first_div = statistics.median(first_divs) if first_divs else None
     mean_prefix = sum(prefix_lens) / n if n else 0.0
-    score = 100.0 * full_match_rate
+    # v0.1.1 GTM score is the *continuous* prefix-agreement ratio rather than
+    # the binary full-match rate. Rationale: v0.1 binary scoring penalised any
+    # divergence equally, even if the model matched 47/48 tokens. The continuous
+    # version distinguishes "matched 5 tokens" from "matched 47 tokens" which
+    # matters for ranking near-faithful quantizations. full_match_rate is still
+    # reported as a diagnostic.
+    score = 100.0 * (mean_prefix / n_predict) if n_predict > 0 else 0.0
+    score = max(0.0, min(100.0, score))
 
     return GTMResult(
         score=score,

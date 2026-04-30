@@ -155,13 +155,20 @@ def json_report(
     gtm_dict = asdict(gtm)
     if not include_per_prompt:
         gtm_dict.pop("per_prompt", None)
+    composite_dict = asdict(composite)
+    # Flatten the composite scalar to top-level so consumers can read
+    # `d['composite']` as a number directly. Keep the full breakdown under
+    # `composite_detail` for diagnostics.
+    composite_scalar = composite_dict.pop("composite")
     return {
-        "schema": "refract.report.v0.1",
+        "schema": "refract.report.v0.1.1",
         "timestamp": _dt.datetime.now().isoformat(timespec="seconds"),
         "model": model,
         "reference": reference_label,
         "candidate": candidate_label,
-        "composite": asdict(composite),
+        "composite": composite_scalar,
+        "band": composite_dict.pop("band"),
+        "composite_detail": composite_dict,
         "axes": {
             "gtm": gtm_dict,
             "kld": asdict(kld),
