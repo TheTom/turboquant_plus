@@ -308,37 +308,55 @@ def run_plad(
     skipped_count = 0
     notes: list[str] = []
 
+    # Build the full (prompt, perturbation_or_None) plan first so we can
+    # batch all ref-side completions before any cand-side completions.
+    # Memory-pressured backends (vLLM on hybrid Qwen3.6) can only hold one
+    # LLM at a time, so interleaving ref/cand per prompt forces N model
+    # reloads — this batching keeps it to two.
+    Cell = tuple[int, str | None, str]  # (prompt_idx, perturbation, prompt_text)
+    cells: list[Cell] = []
     for i, p in enumerate(prompts):
+        cells.append((i, None, p["prompt"]))
         rng = random.Random(seed + i)
-        if progress:
-            print(f"  [{i + 1}/{len(prompts)}] {p['id']:<10} anchor ...", flush=True)
-
-        # Anchor pair (one each KV config)
-        a_ref, _ = run_completion(
-            model=model, prompt=p["prompt"], kv=reference_kv,
-            n_predict=n_predict, ctx=ctx, n_gpu_layers=n_gpu_layers, seed=seed,
-        )
-        a_cand, _ = run_completion(
-            model=model, prompt=p["prompt"], kv=candidate_kv,
-            n_predict=n_predict, ctx=ctx, n_gpu_layers=n_gpu_layers, seed=seed,
-        )
-
         for pert in perturbations:
             fn = _PERTURBATION_FUNCS[pert]
             perturbed = fn(p["prompt"], rng)
             if perturbed is None or perturbed == p["prompt"]:
                 skipped_count += 1
                 continue
-            if progress:
-                print(f"      perturbation={pert} ...", flush=True)
-            p_ref, _ = run_completion(
-                model=model, prompt=perturbed, kv=reference_kv,
-                n_predict=n_predict, ctx=ctx, n_gpu_layers=n_gpu_layers, seed=seed,
-            )
-            p_cand, _ = run_completion(
-                model=model, prompt=perturbed, kv=candidate_kv,
-                n_predict=n_predict, ctx=ctx, n_gpu_layers=n_gpu_layers, seed=seed,
-            )
+            cells.append((i, pert, perturbed))
+
+    ref_text: dict[tuple[int, str | None], str] = {}
+    cand_text: dict[tuple[int, str | None], str] = {}
+
+    for idx, (prompt_idx, pert_name, prompt_text) in enumerate(cells):
+        if progress:
+            label = "anchor" if pert_name is None else f"pert={pert_name}"
+            print(f"  ref [{idx + 1}/{len(cells)}] p{prompt_idx} {label} ...", flush=True)
+        text, _ = run_completion(
+            model=model, prompt=prompt_text, kv=reference_kv,
+            n_predict=n_predict, ctx=ctx, n_gpu_layers=n_gpu_layers, seed=seed,
+        )
+        ref_text[(prompt_idx, pert_name)] = text
+    for idx, (prompt_idx, pert_name, prompt_text) in enumerate(cells):
+        if progress:
+            label = "anchor" if pert_name is None else f"pert={pert_name}"
+            print(f"  cand [{idx + 1}/{len(cells)}] p{prompt_idx} {label} ...", flush=True)
+        text, _ = run_completion(
+            model=model, prompt=prompt_text, kv=candidate_kv,
+            n_predict=n_predict, ctx=ctx, n_gpu_layers=n_gpu_layers, seed=seed,
+        )
+        cand_text[(prompt_idx, pert_name)] = text
+
+    for i, p in enumerate(prompts):
+        a_ref = ref_text.get((i, None), "")
+        a_cand = cand_text.get((i, None), "")
+        for pert in perturbations:
+            key = (i, pert)
+            if key not in ref_text:
+                continue
+            p_ref = ref_text[key]
+            p_cand = cand_text[key]
             ref_drift = _normalized_drift(model, a_ref, p_ref)
             cand_drift = _normalized_drift(model, a_cand, p_cand)
             excess = max(0.0, cand_drift - ref_drift)
@@ -346,7 +364,9 @@ def run_plad(
             per_prompt_records.append(PLADPerPrompt(
                 prompt_id=str(p["id"]),
                 perturbation=pert,
-                perturbed_prompt=perturbed,
+                perturbed_prompt=cells[next(
+                    j for j, c in enumerate(cells) if c[0] == i and c[1] == pert
+                )][2],
                 ref_drift=ref_drift,
                 cand_drift=cand_drift,
                 excess_drift=excess,
