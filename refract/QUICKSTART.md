@@ -22,7 +22,9 @@
 >   mlx-lm yourself, fetch the corpus + prompts, edit paths in flags.
 >   No `pip install refract` yet (entry point is in pyproject as of
 >   v0.3.2; PyPI publish pending).
-> - **vLLM backend is a skeleton.** llama.cpp + MLX backends work.
+> - **All four backends work end-to-end** (v0.3.2): llama.cpp, MLX, vLLM,
+>   SGLang. vLLM and SGLang were verified on AMD MI300X / ROCm 7.2 in the
+>   cross-engine bench at `docs/papers/cross-engine-mi300x.md`.
 > - **Confidence guards exist but aren't exhaustive** — you may find
 >   edge cases. Please open an issue with the JSON.
 > - **Score interpretation is calibrated on one matrix run** of 7
@@ -54,10 +56,19 @@ You need at minimum:
       JSONL when `REFRACT_TRAJECTORY` env var is set.)
     - **mlx-lm** (`pip install mlx mlx-lm`). MLX backend is native
       Python; no patches needed.
-    - **vllm** (`pip install vllm`). Backend is skeleton in v0.3.1;
-      check the source for plug-in pointers.
-  - A model in the right format for your backend (.gguf for llama.cpp;
-    a directory with `config.json + model.safetensors` for mlx).
+    - **vllm** (`pip install vllm` or `pip install -e .[refract-vllm]`).
+      Working backend as of v0.3.2. Caches one LLM at a time, evicts
+      on KV-config change. Tunable via `REFRACT_VLLM_*` env knobs.
+    - **SGLang server** (Docker recommended; `pip install -e
+      .[refract-sglang]` for the HTTP client). Backend posts to a
+      pre-launched SGLang server. KV dtype is fixed at server launch,
+      so `run_kld` requires either two simultaneous servers
+      (`REFRACT_SGLANG_REF_URL` + `REFRACT_SGLANG_CAND_URL`) or a
+      two-phase orchestrator (example in `docs/papers/cross-engine-mi300x.md`).
+  - A model in the right format for your backend:
+    - `.gguf` for llama.cpp
+    - directory with `config.json + model.safetensors` for mlx
+    - HF safetensors directory for vllm and sglang
   - **Corpus + haystack: automatic.** REFRACT auto-downloads
     wikitext-2-raw (~10MB) to `~/.cache/refract/` on first run and uses
     `wiki.test.raw` for KLD + `wiki.train.raw` for R-NIAH unless you
@@ -83,8 +94,8 @@ python3 -m refract.cli selftest
 ```
 
 `--backend auto` infers from the path: `.gguf` → llamacpp; directory →
-mlx. Override with `--backend llamacpp|mlx|vllm` or set
-`REFRACT_BACKEND` env var.
+mlx (or vllm if `REFRACT_BACKEND=vllm`). Override with
+`--backend llamacpp|mlx|vllm|sglang` or set `REFRACT_BACKEND` env var.
 
 Verifies binaries, flags, env vars, and a tiny generation. If it bails,
 fix the reported issue before going further. Don't burn a long run
@@ -213,7 +224,8 @@ model under increasingly aggressive quants.
 |----------|----------|-------------------------------------------------|
 | llamacpp | shipping | .gguf models, all four axes, TurboQuant configs |
 | mlx      | shipping | MLX models (directory layout); Trajectory + R-NIAH + PLAD work; KLD has limitations on RotatingKVCache models |
-| vllm     | skeleton | Plug-in path defined; CUDA/ROCm focus           |
+| vllm     | shipping | HF safetensors models on CUDA / ROCm; all four axes; in-process LLM (caches one at a time, evicts on KV-config change). Verified on MI300X (Qwen3.6-35B-A3B). |
+| sglang   | shipping | HF safetensors models served via a pre-launched SGLang server (HTTP). KV dtype is fixed at server launch — see `docs/papers/cross-engine-mi300x.md` §6 for a two-phase orchestrator that handles this. |
 
 Override default with `--backend mlx` (or `REFRACT_BACKEND=mlx`).
 

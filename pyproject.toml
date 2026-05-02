@@ -41,6 +41,13 @@ refract-mlx = [
 refract-vllm = [
     "vllm>=0.5",
 ]
+refract-sglang = [
+    # SGLang backend is HTTP-based; the user runs the SGLang server
+    # separately (typically via Docker). REFRACT only needs a HTTP client
+    # and a tokenizer to construct prompt token IDs.
+    "requests>=2.28",
+    "transformers>=4.40",
+]
 # TurboQuant Python implementation (separate from REFRACT). Install with
 # `pip install -e .[turboquant]` if you're running benchmarks or unit tests
 # under turboquant/.

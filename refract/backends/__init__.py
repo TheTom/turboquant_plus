@@ -24,13 +24,16 @@ Backend selection
 
 Override via env var ``REFRACT_BACKEND``.
 
-Status (v0.3.1):
+Status (v0.3.2):
 
-  - llamacpp: production
-  - mlx:      SKELETON — `NotImplementedError`. Plug-in design pinned;
-              friend running on MLX hardware can implement methods
-              against this contract without rebuilding the rest of REFRACT.
-  - vllm:     SKELETON — same.
+  - llamacpp: production (primary dev target on macOS Apple Silicon
+              + Linux Ubuntu via the patched binary)
+  - mlx:      production (Apple Silicon native; mlx-lm 0.31+)
+  - vllm:     production (HF safetensors on CUDA / ROCm; cached
+              in-process LLM with evict-on-key-change for memory-pressured
+              hybrid models; verified on AMD MI300X, ROCm 7.2)
+  - sglang:   production (HTTP client; SGLang server runs separately,
+              typically Docker; verified on AMD MI300X, ROCm 7.2)
 """
 
 from __future__ import annotations

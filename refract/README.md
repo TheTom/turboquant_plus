@@ -11,11 +11,12 @@
 ## Install
 
 ```bash
-pip install -e .            # REFRACT alpha — zero non-stdlib deps
-pip install -e .[refract-mlx]   # add the MLX backend (Apple Silicon)
-pip install -e .[refract-vllm]  # add the vLLM backend (CUDA/ROCm; skeleton)
-pip install -e .[turboquant]    # add the TurboQuant Python implementation
-pip install -e .[dev]           # pytest + coverage
+pip install -e .                    # REFRACT alpha — zero non-stdlib deps
+pip install -e .[refract-mlx]       # add the MLX backend (Apple Silicon)
+pip install -e .[refract-vllm]      # add the vLLM backend (CUDA / ROCm)
+pip install -e .[refract-sglang]    # add the SGLang backend (HTTP client + tokenizer)
+pip install -e .[turboquant]        # add the TurboQuant Python implementation
+pip install -e .[dev]               # pytest + coverage
 ```
 
 The base install gives you the `refract` CLI with no third-party
@@ -26,19 +27,35 @@ dependencies. Backends are extras you opt into.
 REFRACT itself (Python framework + report renderer + CLI) is
 platform-portable. The constraint is which **backend** runs on your OS:
 
-| OS | llamacpp backend | mlx backend | vllm backend |
-|---|---|---|---|
-| macOS (Apple Silicon) | ✅ primary dev target | ✅ production | n/a |
-| Linux (Ubuntu 24.04, x86_64) | ✅ verified in Docker | n/a (Apple Silicon only) | ⚠️ skeleton |
-| Windows | ⚠️ TBD (Python side portable; not run end-to-end yet) | n/a | ⚠️ skeleton |
+| OS | llamacpp | mlx | vllm | sglang |
+|---|---|---|---|---|
+| macOS (Apple Silicon) | ✅ primary dev target | ✅ production | n/a | n/a |
+| Linux (Ubuntu 24.04, x86_64, ROCm 7.2 MI300X) | ✅ verified | n/a (Apple Silicon only) | ✅ verified | ✅ verified (HTTP client; SGLang server runs separately) |
+| Windows | ⚠️ TBD (Python side portable; not run end-to-end yet) | n/a | ⚠️ TBD | ⚠️ TBD |
+
+vLLM and SGLang backends were both verified end-to-end on the AMD MI300X
+droplet on hybrid Qwen3.6-35B-A3B during the cross-engine bench documented
+in [`docs/papers/cross-engine-mi300x.md`](../docs/papers/cross-engine-mi300x.md).
 
 The llama.cpp backend needs the patched binaries (`llama-cli`,
 `llama-completion`, `llama-tokenize`, `llama-perplexity`) on the loader
 path — `LD_LIBRARY_PATH` / `ldconfig` on Linux, DLLs next to the `.exe`
 or on `PATH` on Windows. `selftest` detects this and prints the right
-remediation per OS. MLX is Apple Silicon only by upstream design. vLLM
-backend is interface-only in v0.3.x — see
-[`refract/backends/vllm.py`](backends/vllm.py) for plug-in pointers.
+remediation per OS. MLX is Apple Silicon only by upstream design.
+
+The vLLM backend uses `vllm.LLM` in-process. Each call instantiates an
+LLM at the requested KV config; backend caches one LLM at a time and
+evicts on key change for memory-pressured deployments. Env knobs:
+`REFRACT_VLLM_GPU_MEMORY_UTILIZATION`, `REFRACT_VLLM_MAX_NUM_SEQS`,
+`REFRACT_VLLM_KLD_TOPK`, `REFRACT_VLLM_MAX_MODEL_LEN`.
+
+The SGLang backend is HTTP-based — the user runs an SGLang server
+separately (typically via the published Docker image), and REFRACT
+posts to it. KV dtype is fixed at SGLang server-launch time, so
+`run_kld` (which compares two configs) requires either two simultaneous
+servers (`REFRACT_SGLANG_REF_URL` + `REFRACT_SGLANG_CAND_URL`) or a
+two-phase orchestrator that launches them sequentially. See
+`docs/papers/cross-engine-mi300x.md` §6 for a working orchestrator.
 
 Friend-tester input on Windows is welcome — open an issue with your
 `refract selftest` output.
@@ -97,8 +114,9 @@ axis tanks the composite — the framework is intentionally fail-loud.
 
 **Bands**: `[90,100]` EXCELLENT · `[80,90)` PASS · `[60,80)` DEGRADED · `[0,60)` FAIL.
 
-**Backends**: llama.cpp (production), MLX (production via mlx-lm), vLLM
-(skeleton with plug-in pointers).
+**Backends**: llama.cpp (production), MLX (production via mlx-lm),
+vLLM (production, in-process LLM, ROCm + CUDA verified), SGLang
+(production, HTTP client to a pre-launched SGLang server).
 
 ## Subcommands
 
@@ -199,7 +217,8 @@ refract/
     base.py               # Backend ABC
     llamacpp.py           # llama.cpp subprocess backend (production)
     mlx.py                # MLX native Python backend (production)
-    vllm.py               # vLLM backend (skeleton)
+    vllm.py               # vLLM backend (production; CUDA / ROCm)
+    sglang.py             # SGLang HTTP backend (production)
   prompts/v0.1.jsonl      # 30 CC0 prompts
   examples/               # 4 sample JSON reports + README
   tests/                  # 82 unit tests + 1 integration test

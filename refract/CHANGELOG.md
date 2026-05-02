@@ -5,6 +5,55 @@ matrix result that motivated or validated the change.
 
 ---
 
+## v0.3.2.1 — vLLM and SGLang backends production (2026-05-02)
+
+### What changed
+
+- **vLLM backend rewritten from skeleton to working implementation**
+  (`refract/backends/vllm.py`). Cached in-process LLM with
+  evict-on-key-change for memory-pressured deployments (hybrid models
+  whose two LLM instances don't fit a single accelerator). KV-config
+  translation for `kv_cache_dtype` (`auto`, `fp8_e4m3`, `bfloat16`),
+  greedy decode trajectories via `SamplingParams`, KLD via
+  `prompt_logprobs`. Env knobs: `REFRACT_VLLM_GPU_MEMORY_UTILIZATION`,
+  `REFRACT_VLLM_MAX_NUM_SEQS`, `REFRACT_VLLM_KLD_TOPK`,
+  `REFRACT_VLLM_MAX_MODEL_LEN`.
+
+- **SGLang backend new** (`refract/backends/sglang.py`). HTTP-based —
+  the user runs an SGLang server separately (typically via the
+  published Docker image) and REFRACT posts to it. Single-server mode
+  (`REFRACT_SGLANG_URL`) for completion / trajectory / tokenize, plus
+  dual-server mode (`REFRACT_SGLANG_REF_URL` + `REFRACT_SGLANG_CAND_URL`)
+  for KLD which needs both KV configs simultaneously. KV dtype is
+  fixed at SGLang server-launch time, so two-server (or two-phase)
+  orchestration is required for cross-config comparison.
+
+- **Trajectory and PLAD axes now batch ref/cand by KV config.**
+  Previously interleaved per-prompt; now collects all ref completions
+  first, then all cand completions, then computes diff/drift. Two
+  model loads total per axis instead of 2N. Critical for vLLM on
+  hybrid models where each load takes 30–90s.
+
+- **Runner `tokenize_to_ids` dispatches through the active backend.**
+  Previously always shelled out to `llama-tokenize`; now uses the
+  backend's own tokenizer when the backend is not llamacpp. Unblocks
+  R-NIAH on vLLM/SGLang and on hosts where the local llama.cpp
+  checkout has drifted.
+
+- **New extras**: `pip install -e .[refract-vllm]` (vllm),
+  `pip install -e .[refract-sglang]` (requests + transformers).
+
+### Verified end-to-end
+
+Cross-engine bench on AMD MI300X / ROCm 7.2 (Qwen3.6-35B-A3B hybrid GDN
++ attention MoE), all four REFRACT axes (Trajectory + KLD + R-NIAH +
+PLAD) on llama.cpp, vLLM, and SGLang. See
+[`docs/papers/cross-engine-mi300x.md`](../docs/papers/cross-engine-mi300x.md)
+for the full writeup including engine-side issues encountered (8
+nontrivial bugs across the 3 engines) and reproducibility scripts.
+
+---
+
 ## v0.3.2 — HTML reports + repeatability subcommand (2026-04-30)
 
 ### What changed
