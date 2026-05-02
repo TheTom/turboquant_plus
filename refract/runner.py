@@ -661,6 +661,12 @@ def tokenize_to_ids(
     """
     if not text:
         return []
+    # Dispatch to active backend when it's not llama.cpp — MLX/vLLM/SGLang
+    # provide their own tokenizer and avoid the llama-tokenize binary, which
+    # may not be on PATH or may have a stale ABI when the host's llama.cpp
+    # checkout has drifted.
+    if _ACTIVE_BACKEND is not None and getattr(_ACTIVE_BACKEND, "name", None) != "llamacpp":
+        return _ACTIVE_BACKEND.tokenize_to_ids(model=model, text=text, timeout=timeout)
     bin_path = _bin("llama-tokenize")
     cmd: list[str] = [
         str(bin_path),
