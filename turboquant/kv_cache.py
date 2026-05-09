@@ -161,9 +161,9 @@ class KVCacheCompressor:
         n_vectors = num_layers * num_heads * seq_len
         original_bytes = n_vectors * self.head_dim * 2  # fp16
 
-        # K: b bits per coord + 32-bit norm
-        k_bits_total = n_vectors * (self.head_dim * self.k_bits + 32)
-        # V: b bits per coord + 32-bit norm (PolarQuant stores per-vector norm for rescaling)
+        # K: b bits per coord + 64-bit norms (TurboQuant stores ||x||_2 AND ||residual||_2)
+        k_bits_total = n_vectors * (self.head_dim * self.k_bits + 64)
+        # V: b bits per coord + 32-bit norm (TurboQuantMSE/PolarQuant stores ||x||_2 only)
         v_bits_total = n_vectors * self.head_dim * self.v_bits + n_vectors * 32
 
         compressed_bytes = (k_bits_total + v_bits_total) / 8

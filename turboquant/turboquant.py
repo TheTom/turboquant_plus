@@ -114,10 +114,11 @@ class TurboQuant:
         Includes:
         - PolarQuant indices: (b-1) bits per coordinate per vector
         - QJL signs: 1 bit per coordinate per vector
-        - Residual norms: 32 bits (float32) per vector
+        - Vector norms (||x||_2): 32 bits (float32) per vector
+        - Residual norms (||residual||_2): 32 bits (float32) per vector
         """
         per_vector = self.d * self.bit_width  # (b-1) + 1 bits per coordinate
-        norms = 32  # float32 per vector
+        norms = 64  # two float32 norms per vector (vector_norm + residual_norm)
         return n_vectors * (per_vector + norms)
 
     def compression_ratio(self, original_bits_per_value: int = 16) -> float:
@@ -130,7 +131,8 @@ class TurboQuant:
             Compression ratio (e.g., 4.0 means 4× smaller).
         """
         original_per_vector = self.d * original_bits_per_value
-        compressed_per_vector = self.d * self.bit_width + 32  # +32 for norm
+        # +64 = two float32 norms (||x||_2 and ||residual||_2)
+        compressed_per_vector = self.d * self.bit_width + 64
         return original_per_vector / compressed_per_vector
 
 
