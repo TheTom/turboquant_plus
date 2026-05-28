@@ -6,6 +6,21 @@ import pytest
 from turboquant.qjl import QJL, QJL_CONST
 
 
+class TestQJLProjection:
+    """Structural invariants of the projection matrix S."""
+
+    @pytest.mark.parametrize("d", [64, 128, 256, 512])
+    def test_projection_matrix_is_orthogonal(self, d):
+        """S must be orthogonal: ||S Sᵀ − I||_F < 1e-12.
+
+        Required for the classical unbiased estimator E[⟨x̂, y⟩] = ⟨x, y⟩
+        and the closed-form E[||x̂||²] = (π/2)·||x||².
+        """
+        qjl = QJL(d=d, seed=42)
+        err = np.linalg.norm(qjl.S @ qjl.S.T - np.eye(d), "fro")
+        assert err < 1e-12, f"||S Sᵀ − I||_F = {err:.2e} exceeds 1e-12"
+
+
 class TestQJLRoundTrip:
     """QJL quantize → dequantize should approximately preserve vectors."""
 
