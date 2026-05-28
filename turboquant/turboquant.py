@@ -85,11 +85,12 @@ class TurboQuant:
             bit_width=self.bit_width,
         )
 
-    def dequantize(self, compressed: CompressedVector) -> np.ndarray:
+    def dequantize(self, compressed: CompressedVector, damping: float = 0.7) -> np.ndarray:
         """Dequantize back to approximate vector.
 
         Args:
             compressed: CompressedVector from quantize().
+            damping: Scaling factor for the QJL correction (default: 0.7).
 
         Returns:
             Reconstructed vector(s), same shape as original.
@@ -97,8 +98,8 @@ class TurboQuant:
         # Stage 1: PolarQuant reconstruction (with norm rescaling)
         x_mse = self.polar_quant.dequantize(compressed.mse_indices, compressed.vector_norms)
 
-        # Stage 2: QJL residual reconstruction
-        x_qjl = self.qjl.dequantize(compressed.qjl_signs, compressed.residual_norms)
+        # Stage 2: QJL residual reconstruction (with damping)
+        x_qjl = self.qjl.dequantize(compressed.qjl_signs, compressed.residual_norms, damping=damping)
 
         return x_mse + x_qjl
 

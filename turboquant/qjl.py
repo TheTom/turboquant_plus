@@ -18,6 +18,9 @@ QJL_CONST = np.sqrt(np.pi / 2)
 class QJL:
     """Quantized Johnson-Lindenstrauss 1-bit quantizer.
 
+    Uses a random orthogonal projection matrix for minimum variance in the
+    inner-product estimation.
+
     Usage:
         qjl = QJL(d=128, seed=42)
         signs, norm = qjl.quantize(residual)
@@ -31,9 +34,14 @@ class QJL:
             seed: Random seed for projection matrix.
         """
         self.d = d
+        # Random orthogonal matrix S ∈ R^(d×d) via QR decomposition
         rng = np.random.default_rng(seed)
-        # Random projection matrix S ∈ R^(d×d), entries ~ N(0,1)
-        self.S = rng.standard_normal((d, d))
+        G = rng.standard_normal((d, d))
+        Q, R = np.linalg.qr(G)
+        # Ensure proper rotation by adjusting signs
+        diag_signs = np.sign(np.diag(R))
+        Q = Q * diag_signs[np.newaxis, :]
+        self.S = Q
 
     def quantize(self, r: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """Quantize residual vector(s) to sign bits.
@@ -54,11 +62,12 @@ class QJL:
         norms = np.linalg.norm(r, axis=1)  # (batch,)
 
         # Project: S @ r.T → (d, batch), transpose to (batch, d)
+        # Note: self.S is already the orthogonal matrix
         projected = (self.S @ r.T).T
 
         # Sign quantization: +1 or -1
         signs = np.sign(projected).astype(np.int8)
-        # Handle exact zeros (extremely rare) — map to +1
+        # Handle exact zeros — map to +1
         signs[signs == 0] = 1
 
         # Zero vectors: signs are meaningless, norm=0 ensures dequantize returns zero
@@ -66,12 +75,13 @@ class QJL:
             return signs[0], norms[0]
         return signs, norms
 
-    def dequantize(self, signs: np.ndarray, norms: np.ndarray) -> np.ndarray:
+    def dequantize(self, signs: np.ndarray, norms: np.ndarray, damping: float = 0.7) -> np.ndarray:
         """Dequantize sign bits back to approximate residual.
 
         Args:
             signs: Sign bits, shape (d,) or (batch, d).
             norms: Residual norms, scalar or (batch,).
+            damping: Scaling factor for the QJL correction (default: 0.7).
 
         Returns:
             Approximate residual, same shape as original.
@@ -83,13 +93,11 @@ class QJL:
         else:
             signs = signs.astype(np.float64)
 
-        # x̃_qjl = √(π/2) / d · γ · S^T @ signs
-        # S^T @ signs.T → (d, batch), transpose to (batch, d)
+        # x̃_qjl = √(π/2) / √d · γ · S^T @ signs
         reconstructed = (self.S.T @ signs.T).T  # (batch, d)
 
-        # Scale by √(π/2) / m * norm, where m = number of projections (= d here)
-        # If projection matrix changes from (d,d) to (m,d), update this divisor
-        scale = QJL_CONST / self.d * norms  # (batch,)
-        reconstructed *= scale[:, np.newaxis]
+        # Scale by √(π/2) / √d * norm
+        scale = QJL_CONST / np.sqrt(self.d) * norms  # (batch,)
+        reconstructed *= (scale[:, np.newaxis] * damping)
 
         return reconstructed[0] if single else reconstructed
