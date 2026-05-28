@@ -78,6 +78,12 @@ dev = [
     "coverage>=7.0",
     "build>=1.0",
     "twine>=5.0",
+    # Runtime deps of the in-repo `turboquant` package (dev-only — not shipped
+    # with refract-llm). Upstream's [dev] extra omits these, which breaks
+    # `pytest tests/` in CI since the renamed pyproject ships refract-llm
+    # only. Listed here so our fork's CI is green.
+    "numpy>=1.21",
+    "scipy>=1.7",
 ]
 
 [project.urls]
