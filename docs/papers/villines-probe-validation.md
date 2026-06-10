@@ -180,6 +180,87 @@ T5 and T6 are recommended next steps before joint publication claims.
 
 The probe (`tq_collapse_probe.py`), the downstream test (`tv_vs_ppl.py`), Villines' originating result JSONs, our reproduction JSONs, and the calibration text are committed to branch `test/villines-probe-validation` of [TheTom/turboquant_plus](https://github.com/TheTom/turboquant_plus) under `villines-probe/`. Run instructions live in the probe docstring; on M5 Max use `--device mps`. The Villines defaults are `--device cuda:0`.
 
+## 10 Addendum (2026-06-10): Mechanism Revision After the 7B/8B Controls
+
+This addendum supersedes the causal framing in §4, §5.3, and §5.5, and closes T5/T6 from §8. It follows Villines' 7B/8B control runs (2026-06-02, probe v2.2, turboMSE-anchored per the algorithm-equivalence correction below) and our independent reproduction plus three new measurements on M5 Max Metal. New artifacts: `villines-probe/k_channel_stats.py`, `results_T4mse_qwen7b_instruct_m5max.json`, `results_qwen3_8b_biassub_m5max.json`, `results_mistral7b_m5max.json`, `kstats_{qwen25_7b_instruct,qwen3_8b,mistral7b}.json`.
+
+### 10.1 Algorithm-equivalence correction to the T4 anchor
+
+`TurboQuant(bit_width=3)` in the Python package is Algorithm 2 (PolarQuant 2-bit + QJL 1-bit residual). llama.cpp `--cache-type-k turbo3` is Algorithm 1 (PolarQuant 3-bit, no QJL) — the production path dropped QJL per [turbo4-resurrection](turbo4-resurrection.md). The §3.4 headline therefore anchored the PPL 3,556 catastrophe to the wrong flavor. Re-anchored on Qwen2.5-7B-Instruct, fp16 weights, seq 2048, layers [0, 1, 14, 27]:
+
+| Config | mean_TV | top1_keep | Note |
+|--------|---------|-----------|------|
+| turboMSE8 | 0.0411 | 0.911 | q8_0-K healthy stand-in |
+| turboMSE5 | 0.1865 | 0.725 | |
+| turboMSE4 | 0.2735 | 0.638 | |
+| **turboMSE3** | **0.3700** | **0.552** | **correct llama.cpp turbo3 anchor** |
+| turboMSE2 | 0.4910 | 0.445 | |
+| turboMSE3_biassub | 0.0997 | 0.832 | 3.7× recovery |
+| turbo3 (Alg 2, QJL) | 0.4748 | 0.476 | §3.4's flavor; QJL inflates TV at matched bits |
+
+The qualitative anchor survives (turboMSE3 is still catastrophic routing); the §3.4 number 0.46 belongs to the QJL flavor and overstates the production path by ~0.10 TV. All numbers below reproduce Villines' RTX 5060 Ti CUDA values within ±0.010.
+
+### 10.2 The bias hypothesis is falsified (T6 closed, opposite of expectation)
+
+Villines ran the cross-architecture controls; we reproduced all of them on Metal:
+
+| Model | turboMSE3 mean_TV (Villines / ours) | k_proj bias | Outcome |
+|-------|--------------------------------------|-------------|---------|
+| Qwen2.5-7B-Instruct | 0.3755 / 0.3700 | yes | collapses |
+| Qwen3-8B | 0.3108 / 0.3071 | **no** (QK-norm) | **collapses anyway** |
+| Mistral-7B-v0.3 | 0.0968 / 0.0909 | no | clean |
+
+A bias-free Qwen collapses nearly as hard as the biased one; the bias was a correlate on Qwen2.5, not the cause. The §4 reconciliation ("the K-channel offset is therefore a Qwen-specific phenomenon" caused by `bias=True`) and the §5.3/§5.5 causal chain are superseded accordingly.
+
+Two of Villines' candidate mechanisms are also ruled out without new compute, from model configs plus the existing PPL corpus:
+
+- **GQA ratio**: Qwen3-8B is 32Q/8KV = 4:1 — identical to Mistral-7B's 4:1 — yet collapses while Mistral stays clean. Llama-3.1-70B (8:1, higher than Qwen2.5's 7:1) tolerates symmetric turbo3 at +11.4% PPL ([asymmetric-kv-compression §3.5](asymmetric-kv-compression.md)).
+- **head_dim**: Qwen2.5-7B, Qwen3-8B, Mistral-7B, and Llama-3.1 are all head_dim 128.
+
+### 10.3 Generalized mechanism: per-channel K off-centering
+
+`k_channel_stats.py` captures post-RoPE K (same SDPA patch) and reports per (layer, kv-head) **offset_ratio** = ‖mean_t K‖ / E_t‖K − mean‖ — how far off-center the K point cloud sits relative to its spread. This is exactly the vector `*_biassub` removes, defined with no reference to a bias term. PolarQuant codebooks assume a roughly centered cloud; a large offset_ratio means the quantizer spends its bits re-encoding a constant.
+
+| Model | offset_ratio max | p90 | mean | top heads |
+|-------|------------------|-----|------|-----------|
+| Qwen2.5-7B-Instruct | **58.0** | 2.12 | 2.34 | L27/KV1 = 58 (offset 921.5 ≈ bias_norm 920.3), L0 heads 10–36 |
+| Qwen3-8B | **6.5** | 1.95 | 1.16 | all of layer 0 at 3.9–6.5 (broad, not concentrated) |
+| Mistral-7B-v0.3 | **2.5** | 1.12 | 0.95 | none above 2.5 |
+
+On Qwen2.5 the empirical offset_norm reproduces the k_proj bias_norm head-for-head (921.5 vs 920.3 on the L27 outlier) — the bias is where the offsets come from on that architecture. On Qwen3 comparable offsets exist with no bias term (produced by the learned projection itself); on Mistral they don't exist. The concentration pattern also explains the gini difference Villines observed: Qwen2.5's collapse is few-head-dominated, Qwen3's layer-0 collapse is broad.
+
+Dose-response (per q-head, turboMSE3, offset_ratio of the owning kv-head):
+
+| Model | vs base TV (Pearson / Spearman) | vs TV recovery under centering |
+|-------|--------------------------------|-------------------------------|
+| Qwen2.5-7B-Instruct (n=112) | 0.857 / 0.844 (log₁₀: 0.967) | 0.883 / 0.866 |
+| Qwen3-8B (n=128) | 0.923 / 0.826 | 0.946 / 0.871 |
+
+This beats the bias_norm dose-response (§3.3 Spearman 0.65 at 7B) on the architecture that has a bias, and — decisively — it transfers to the architecture that doesn't.
+
+### 10.4 The centering discriminator (new measurement)
+
+Villines' Qwen3 sweep never ran `*_biassub`; it is the experiment that separates "offset mechanism, source-independent" from "offsets were a Qwen2.5 artifact." Result:
+
+| Model | turboMSE3 | turboMSE3_biassub | Recovery |
+|-------|-----------|--------------------|----------|
+| Qwen2.5-7B-Instruct | 0.3700 | 0.0997 | 3.7× |
+| **Qwen3-8B** | **0.3071** | **0.1479** | **2.1×** |
+| Mistral-7B-v0.3 | 0.0909 | 0.0812 | ~none (nothing to remove) |
+
+Empirical per-head mean subtraction substantially rescues the bias-free Qwen, and is a no-op on the clean control — both as the offset mechanism predicts. After centering, Qwen2.5 (0.100) lands at Mistral's uncentered baseline (0.091): the "clean architecture" baseline *is* the centered baseline. Qwen3 retains a residual gap (0.148 vs 0.091).
+
+### 10.5 Corpus reconciliation: the PPL catastrophe is Qwen-family-only
+
+Villines asked whether the llama.cpp PPL catastrophe also bites non-Qwen models. The existing corpus answers no, across four GPU backends: Qwen2.5-1.5B/7B catastrophic (PPL 8,641 / 3,556), Qwen3-30B-A3B MoE catastrophic (+26.2%, @sztlink), versus Llama-3.1-8B +6.4%, Llama-3.1-70B +11.4%, Mistral-Small-24B healthy, Mistral-7B healthy (Vulkan), Command-R+ 104B +3.6% ([asymmetric-kv-compression §3–4](asymmetric-kv-compression.md)). The corpus already contained a bias-free Qwen failing (Qwen3 MoE) — the routing-side controls now explain it.
+
+### 10.6 Revised claims status
+
+- **Superseded**: §4's bias-causal reconciliation; §5.3/§5.5 causal chain (now: Qwen2.5-specific *source* of a general offset mechanism); §3.4's turbo3 = 0.46 as the llama.cpp anchor (now turboMSE3 = 0.370).
+- **Closed**: §8 T5 (pre-RoPE exact bias ≈ post-RoPE empirical mean: 0.0983 vs 0.1026 at turboMSE3 — the bias is essentially the whole removable offset on Qwen2.5); §8 T6 (ran, falsified the hypothesis it was meant to confirm).
+- **Strengthened**: drop-QJL (turbo3 0.4748 vs turboMSE3 0.3700 on identical captures); cross-framework reproducibility (every Villines 7B/8B number reproduced within ±0.010 on a different backend, calibration text lineage, and seed).
+- **Open**: Qwen3's post-centering residual (0.148 vs Mistral 0.091). Per-channel kurtosis does not predict the residual (Spearman 0.02), so the heavy-tail candidate is unsupported; the residual is currently unattributed quantizer variance. Production guidance unchanged: below b≈4, asymmetric q8_0-K remains the only full rescue; centering is a partial low-bit-K rescue that now generalizes across Qwen generations.
+
 ## References
 
 1. Villines, G. (2026-05-31). `tq_collapse_probe.py` and `tv_vs_ppl.py`. Private distribution.
