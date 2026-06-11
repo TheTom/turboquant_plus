@@ -1,0 +1,1720 @@
+{
+ "summary": {
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "n_head_points": 112,
+  "rho_raw": {
+   "mean": 3.4118653883259853,
+   "p90": 4.429429681930523,
+   "max": 8.718566719907479
+  },
+  "rho_centered": {
+   "mean": 1.6266409939076674,
+   "p90": 1.9575495395710285,
+   "max": 2.201473285721233
+  },
+  "delta_b_raw": {
+   "mean": 0.8441214100715203,
+   "p90": 1.073553682128821,
+   "max": 1.5620454920401954
+  },
+  "delta_b_centered": {
+   "mean": 0.3439367882269133,
+   "p90": 0.4845197439243033,
+   "max": 0.5692346688348057
+  },
+  "cert_norm_raw": {
+   "mean": 257.9976497348015,
+   "p90": 685.2196668525177,
+   "max": 1874.3805112113348
+  },
+  "cert_norm_centered": {
+   "mean": 10.269709743815488,
+   "p90": 16.002606844359565,
+   "max": 93.03436763358583
+  },
+  "elapsed_seconds": 1.6234312057495117
+ },
+ "per_head": {
+  "0_0": {
+   "raw": {
+    "rho": 3.200182547878865,
+    "delta_b": 0.8390771015263153,
+    "certificate": 1695110660.647992,
+    "certificate_normalized": 587.3337758043463
+   },
+   "centered": {
+    "rho": 1.5096586293937315,
+    "delta_b": 0.297111178960944,
+    "certificate": 55.60752853028213,
+    "certificate_normalized": 30.318670744882795
+   },
+   "offset_ratio": 35.53376280138705
+  },
+  "0_1": {
+   "raw": {
+    "rho": 4.535340854304559,
+    "delta_b": 1.0906054904083937,
+    "certificate": 709196627.2065221,
+    "certificate_normalized": 1838.829873496779
+   },
+   "centered": {
+    "rho": 1.2625237732361307,
+    "delta_b": 0.16815527698447744,
+    "certificate": 19.53389852691999,
+    "certificate_normalized": 4.31210774260825
+   },
+   "offset_ratio": 17.256822637361374
+  },
+  "0_2": {
+   "raw": {
+    "rho": 7.6062179761649755,
+    "delta_b": 1.4635896418893384,
+    "certificate": 342177672.55981576,
+    "certificate_normalized": 1753.2310236705462
+   },
+   "centered": {
+    "rho": 1.5252266852303893,
+    "delta_b": 0.30451183883078015,
+    "certificate": 18.474977252564564,
+    "certificate_normalized": 11.030990101368463
+   },
+   "offset_ratio": 18.59989435877528
+  },
+  "0_3": {
+   "raw": {
+    "rho": 4.45415469448989,
+    "delta_b": 1.0775758321721758,
+    "certificate": 10050814.344369644,
+    "certificate_normalized": 1126.6706829059444
+   },
+   "centered": {
+    "rho": 1.3626295895794123,
+    "delta_b": 0.22319672021200482,
+    "certificate": 7.835104673611199,
+    "certificate_normalized": 9.026098048749596
+   },
+   "offset_ratio": 10.384841200596021
+  },
+  "1_0": {
+   "raw": {
+    "rho": 8.047319935186847,
+    "delta_b": 1.504254195340801,
+    "certificate": 23090143.921768647,
+    "certificate_normalized": 889.2531718017294
+   },
+   "centered": {
+    "rho": 2.162704861090585,
+    "delta_b": 0.5564183988789603,
+    "certificate": 1681.473402771211,
+    "certificate_normalized": 93.03436763358583
+   },
+   "offset_ratio": 6.081359060719578
+  },
+  "1_1": {
+   "raw": {
+    "rho": 7.628762786891646,
+    "delta_b": 1.4657245517314046,
+    "certificate": 25134.04433652923,
+    "certificate_normalized": 210.04202495339504
+   },
+   "centered": {
+    "rho": 1.489760002287197,
+    "delta_b": 0.28753996688794736,
+    "certificate": 33.642022541805844,
+    "certificate_normalized": 8.389877662526025
+   },
+   "offset_ratio": 2.13532814514564
+  },
+  "1_2": {
+   "raw": {
+    "rho": 8.718566719907479,
+    "delta_b": 1.5620454920401954,
+    "certificate": 104742.47186345926,
+    "certificate_normalized": 258.25521366883635
+   },
+   "centered": {
+    "rho": 1.382495838918044,
+    "delta_b": 0.23363756909750039,
+    "certificate": 127.24407686992332,
+    "certificate_normalized": 5.801031319530388
+   },
+   "offset_ratio": 1.8185584288301853
+  },
+  "1_3": {
+   "raw": {
+    "rho": 6.384292013089706,
+    "delta_b": 1.3372633204701032,
+    "certificate": 12300.292606420862,
+    "certificate_normalized": 166.54588830763527
+   },
+   "centered": {
+    "rho": 1.4322921922522918,
+    "delta_b": 0.2591629185469785,
+    "certificate": 99.29819516808627,
+    "certificate_normalized": 15.85894441889455
+   },
+   "offset_ratio": 1.5658184969648241
+  },
+  "2_0": {
+   "raw": {
+    "rho": 3.3717693680182346,
+    "delta_b": 0.8767529290243881,
+    "certificate": 393.5010136422269,
+    "certificate_normalized": 50.684067163103144
+   },
+   "centered": {
+    "rho": 1.3207845642037999,
+    "delta_b": 0.20069758245902516,
+    "certificate": 8.234406303425034,
+    "certificate_normalized": 2.896527211164953
+   },
+   "offset_ratio": 0.827143210245673
+  },
+  "2_1": {
+   "raw": {
+    "rho": 7.335665360565977,
+    "delta_b": 1.4374639136824319,
+    "certificate": 303323.965928742,
+    "certificate_normalized": 696.0958769689805
+   },
+   "centered": {
+    "rho": 1.248752690801369,
+    "delta_b": 0.1602438933638453,
+    "certificate": 14.108710879684068,
+    "certificate_normalized": 5.161956312117527
+   },
+   "offset_ratio": 3.466927703509559
+  },
+  "2_2": {
+   "raw": {
+    "rho": 3.061069819456374,
+    "delta_b": 0.8070179757213632,
+    "certificate": 8999.385006277475,
+    "certificate_normalized": 267.27428317659536
+   },
+   "centered": {
+    "rho": 1.85673201903201,
+    "delta_b": 0.4463828035138434,
+    "certificate": 66.354579694918,
+    "certificate_normalized": 26.181712104218725
+   },
+   "offset_ratio": 1.643681378850232
+  },
+  "2_3": {
+   "raw": {
+    "rho": 3.931225238094593,
+    "delta_b": 0.9874895124041488,
+    "certificate": 18741.021365183227,
+    "certificate_normalized": 288.8339291056728
+   },
+   "centered": {
+    "rho": 1.5749995486614092,
+    "delta_b": 0.3276757075938834,
+    "certificate": 31.83530811376406,
+    "certificate_normalized": 8.6860663249687
+   },
+   "offset_ratio": 1.7983830619230112
+  },
+  "3_0": {
+   "raw": {
+    "rho": 5.655774262225453,
+    "delta_b": 1.2498622696504762,
+    "certificate": 7487669.963210943,
+    "certificate_normalized": 936.116462601857
+   },
+   "centered": {
+    "rho": 1.5610613206111947,
+    "delta_b": 0.32126360472584853,
+    "certificate": 46.03739715438761,
+    "certificate_normalized": 13.278299941247887
+   },
+   "offset_ratio": 6.927976721115361
+  },
+  "3_1": {
+   "raw": {
+    "rho": 3.4679243098486268,
+    "delta_b": 0.8970362054797464,
+    "certificate": 759.4431112106088,
+    "certificate_normalized": 47.094452093001415
+   },
+   "centered": {
+    "rho": 1.4317073804496845,
+    "delta_b": 0.25886832873375265,
+    "certificate": 47.829387766171976,
+    "certificate_normalized": 12.453494064915356
+   },
+   "offset_ratio": 1.0363954162881603
+  },
+  "3_2": {
+   "raw": {
+    "rho": 4.371974653087081,
+    "delta_b": 1.0641425184404563,
+    "certificate": 33421.52243669238,
+    "certificate_normalized": 792.6033694264718
+   },
+   "centered": {
+    "rho": 1.7021865178552882,
+    "delta_b": 0.3836945648226259,
+    "certificate": 37.52087493282149,
+    "certificate_normalized": 13.539072577581635
+   },
+   "offset_ratio": 1.7151903907502488
+  },
+  "3_3": {
+   "raw": {
+    "rho": 3.6404960056058373,
+    "delta_b": 0.9320675131347249,
+    "certificate": 271497.30150526727,
+    "certificate_normalized": 873.8661244404475
+   },
+   "centered": {
+    "rho": 1.2350572599191947,
+    "delta_b": 0.15228896490759905,
+    "certificate": 39.0570604438423,
+    "certificate_normalized": 7.863273161887685
+   },
+   "offset_ratio": 2.634732250300459
+  },
+  "4_0": {
+   "raw": {
+    "rho": 3.005767015280402,
+    "delta_b": 0.793866593295432,
+    "certificate": 2095.0442178776657,
+    "certificate_normalized": 314.2011784253088
+   },
+   "centered": {
+    "rho": 1.6443696622405743,
+    "delta_b": 0.3587673301458897,
+    "certificate": 11.95905095762044,
+    "certificate_normalized": 6.257482311139361
+   },
+   "offset_ratio": 0.9358653436638305
+  },
+  "4_1": {
+   "raw": {
+    "rho": 1.9551561255218577,
+    "delta_b": 0.48364190799208623,
+    "certificate": 159.3450192160794,
+    "certificate_normalized": 15.463052147056478
+   },
+   "centered": {
+    "rho": 1.2660586547458095,
+    "delta_b": 0.17017212218987626,
+    "certificate": 22.25532297013377,
+    "certificate_normalized": 3.483637521728702
+   },
+   "offset_ratio": 0.5223071944116972
+  },
+  "4_2": {
+   "raw": {
+    "rho": 2.17519171441857,
+    "delta_b": 0.5605712805385917,
+    "certificate": 1870.9774713625138,
+    "certificate_normalized": 190.87975945758268
+   },
+   "centered": {
+    "rho": 1.5176712459363302,
+    "delta_b": 0.30092965584323633,
+    "certificate": 42.028720068472815,
+    "certificate_normalized": 14.731766808933491
+   },
+   "offset_ratio": 0.9262543852586269
+  },
+  "4_3": {
+   "raw": {
+    "rho": 2.158813392687536,
+    "delta_b": 0.555119271268098,
+    "certificate": 1013.156822971369,
+    "certificate_normalized": 129.39691398207682
+   },
+   "centered": {
+    "rho": 1.3393700716001906,
+    "delta_b": 0.21077731815654058,
+    "certificate": 11.150817398737766,
+    "certificate_normalized": 3.1266920557335935
+   },
+   "offset_ratio": 0.6959732227718457
+  },
+  "5_0": {
+   "raw": {
+    "rho": 2.565682458125452,
+    "delta_b": 0.6796713131101537,
+    "certificate": 1706.631238385953,
+    "certificate_normalized": 194.68403333331065
+   },
+   "centered": {
+    "rho": 1.386617922674165,
+    "delta_b": 0.23578515662827632,
+    "certificate": 5.509207361065844,
+    "certificate_normalized": 3.405844999404183
+   },
+   "offset_ratio": 1.164760313833936
+  },
+  "5_1": {
+   "raw": {
+    "rho": 3.9388227473771757,
+    "delta_b": 0.9888822475425226,
+    "certificate": 2065.3447279082548,
+    "certificate_normalized": 271.53994601221126
+   },
+   "centered": {
+    "rho": 1.7412393453878716,
+    "delta_b": 0.40005726251430973,
+    "certificate": 8.492163602216605,
+    "certificate_normalized": 7.3678654652786655
+   },
+   "offset_ratio": 1.258359683454046
+  },
+  "5_2": {
+   "raw": {
+    "rho": 3.5948221794509556,
+    "delta_b": 0.9229602042239192,
+    "certificate": 947.950407573558,
+    "certificate_normalized": 85.73178652388852
+   },
+   "centered": {
+    "rho": 1.4393392640639817,
+    "delta_b": 0.2627033436047401,
+    "certificate": 16.536074836590053,
+    "certificate_normalized": 5.0914184376044
+   },
+   "offset_ratio": 0.9260851335353909
+  },
+  "5_3": {
+   "raw": {
+    "rho": 1.8733275936457272,
+    "delta_b": 0.45280160472955167,
+    "certificate": 188.4947510856745,
+    "certificate_normalized": 29.11330601936297
+   },
+   "centered": {
+    "rho": 1.442460374245336,
+    "delta_b": 0.26426584360696775,
+    "certificate": 9.154897686905828,
+    "certificate_normalized": 2.379781422293978
+   },
+   "offset_ratio": 0.546945263527522
+  },
+  "6_0": {
+   "raw": {
+    "rho": 1.489269548860947,
+    "delta_b": 0.2873024483537797,
+    "certificate": 403.7260238707254,
+    "certificate_normalized": 66.44893712222691
+   },
+   "centered": {
+    "rho": 1.140768331313703,
+    "delta_b": 0.09500291851259515,
+    "certificate": 4.008249928509713,
+    "certificate_normalized": 1.5721537336596176
+   },
+   "offset_ratio": 0.7386098888995256
+  },
+  "6_1": {
+   "raw": {
+    "rho": 3.857595627230599,
+    "delta_b": 0.9738509603450388,
+    "certificate": 3800.8181518512365,
+    "certificate_normalized": 262.00739157311216
+   },
+   "centered": {
+    "rho": 1.9598887886239074,
+    "delta_b": 0.4853858963914687,
+    "certificate": 22.833880577141247,
+    "certificate_normalized": 10.62390682148483
+   },
+   "offset_ratio": 1.2692901782182429
+  },
+  "6_2": {
+   "raw": {
+    "rho": 4.3160979413027825,
+    "delta_b": 1.0548638014848626,
+    "certificate": 11294.425536911116,
+    "certificate_normalized": 391.9362251494803
+   },
+   "centered": {
+    "rho": 1.7272424176663261,
+    "delta_b": 0.39423528932610213,
+    "certificate": 62.81146723798931,
+    "certificate_normalized": 21.058579922698502
+   },
+   "offset_ratio": 1.4561399717330095
+  },
+  "6_3": {
+   "raw": {
+    "rho": 2.6178807054466104,
+    "delta_b": 0.6941996782095918,
+    "certificate": 654.5132444586967,
+    "certificate_normalized": 72.18392759248707
+   },
+   "centered": {
+    "rho": 1.2710184604829595,
+    "delta_b": 0.17299249221856702,
+    "certificate": 10.573390389565187,
+    "certificate_normalized": 2.9795816215423114
+   },
+   "offset_ratio": 0.7755217655691139
+  },
+  "7_0": {
+   "raw": {
+    "rho": 2.8578274841577973,
+    "delta_b": 0.7574594146090868,
+    "certificate": 1809.5044895449228,
+    "certificate_normalized": 161.34595927051018
+   },
+   "centered": {
+    "rho": 1.4161310694412232,
+    "delta_b": 0.25097739982975986,
+    "certificate": 34.346485280831075,
+    "certificate_normalized": 10.175890574625402
+   },
+   "offset_ratio": 0.9086343564602206
+  },
+  "7_1": {
+   "raw": {
+    "rho": 3.870507904085003,
+    "delta_b": 0.9762614476067144,
+    "certificate": 1307.3420245936222,
+    "certificate_normalized": 110.63327102571048
+   },
+   "centered": {
+    "rho": 1.5958797053499318,
+    "delta_b": 0.33717595390173744,
+    "certificate": 13.422472131265287,
+    "certificate_normalized": 4.44667427181932
+   },
+   "offset_ratio": 0.9930460610873945
+  },
+  "7_2": {
+   "raw": {
+    "rho": 2.7170556795482312,
+    "delta_b": 0.7210220652210619,
+    "certificate": 749.4347235355141,
+    "certificate_normalized": 73.25908578402816
+   },
+   "centered": {
+    "rho": 1.7043858000878316,
+    "delta_b": 0.3846259685079413,
+    "certificate": 25.073972695032225,
+    "certificate_normalized": 13.162589806902663
+   },
+   "offset_ratio": 1.1500902430737288
+  },
+  "7_3": {
+   "raw": {
+    "rho": 5.77726075807256,
+    "delta_b": 1.2651928062699709,
+    "certificate": 7709.155025770452,
+    "certificate_normalized": 284.3305946462555
+   },
+   "centered": {
+    "rho": 1.4586600237445506,
+    "delta_b": 0.2723218336043539,
+    "certificate": 33.223840807157956,
+    "certificate_normalized": 9.859146442194685
+   },
+   "offset_ratio": 1.3609483646574438
+  },
+  "8_0": {
+   "raw": {
+    "rho": 3.0459272539142,
+    "delta_b": 0.8034407431269023,
+    "certificate": 1172.1687632608214,
+    "certificate_normalized": 210.0217961068566
+   },
+   "centered": {
+    "rho": 1.5581763468073737,
+    "delta_b": 0.319929259917771,
+    "certificate": 10.250908697604572,
+    "certificate_normalized": 6.591790331965419
+   },
+   "offset_ratio": 0.950356468065251
+  },
+  "8_1": {
+   "raw": {
+    "rho": 2.2588117555974856,
+    "delta_b": 0.5877820223548573,
+    "certificate": 1083.6744967241325,
+    "certificate_normalized": 80.02873158095954
+   },
+   "centered": {
+    "rho": 1.74448141124742,
+    "delta_b": 0.4013991123104128,
+    "certificate": 26.61580366524187,
+    "certificate_normalized": 7.424441098713882
+   },
+   "offset_ratio": 0.9755371834005803
+  },
+  "8_2": {
+   "raw": {
+    "rho": 2.0479109381343945,
+    "delta_b": 0.5170764875747815,
+    "certificate": 607.5413366956165,
+    "certificate_normalized": 61.782375382317056
+   },
+   "centered": {
+    "rho": 1.283356316048795,
+    "delta_b": 0.17996089075854,
+    "certificate": 15.8475579962487,
+    "certificate_normalized": 3.8447759575291625
+   },
+   "offset_ratio": 0.7410048100558825
+  },
+  "8_3": {
+   "raw": {
+    "rho": 3.337117437927071,
+    "delta_b": 0.8693012289559165,
+    "certificate": 276.3230771265516,
+    "certificate_normalized": 20.778715921663917
+   },
+   "centered": {
+    "rho": 1.5468359634585218,
+    "delta_b": 0.31466010606875766,
+    "certificate": 39.20348310384028,
+    "certificate_normalized": 5.819766995004091
+   },
+   "offset_ratio": 0.6404539426980518
+  },
+  "9_0": {
+   "raw": {
+    "rho": 3.814883033476984,
+    "delta_b": 0.9658194119362437,
+    "certificate": 1708.8626010934352,
+    "certificate_normalized": 147.90467596221018
+   },
+   "centered": {
+    "rho": 1.520400620963865,
+    "delta_b": 0.30222575976994714,
+    "certificate": 34.554310068886814,
+    "certificate_normalized": 11.951146976321636
+   },
+   "offset_ratio": 1.0046938480360033
+  },
+  "9_1": {
+   "raw": {
+    "rho": 2.716376150069865,
+    "delta_b": 0.7208416352746799,
+    "certificate": 837.1143621429896,
+    "certificate_normalized": 94.62746575825956
+   },
+   "centered": {
+    "rho": 1.6388017302058664,
+    "delta_b": 0.3563206605464929,
+    "certificate": 22.531394699410065,
+    "certificate_normalized": 7.8962657901995685
+   },
+   "offset_ratio": 0.8749959184184026
+  },
+  "9_2": {
+   "raw": {
+    "rho": 3.287422531218716,
+    "delta_b": 0.8584784487015665,
+    "certificate": 2151.106864362528,
+    "certificate_normalized": 250.60023159116136
+   },
+   "centered": {
+    "rho": 1.5691491055153424,
+    "delta_b": 0.3249912241347877,
+    "certificate": 20.255097021362808,
+    "certificate_normalized": 13.930757705883664
+   },
+   "offset_ratio": 1.2000224623799403
+  },
+  "9_3": {
+   "raw": {
+    "rho": 2.8544168440332824,
+    "delta_b": 0.7565980168999009,
+    "certificate": 822.472245362735,
+    "certificate_normalized": 67.85782496810002
+   },
+   "centered": {
+    "rho": 1.7077914115982895,
+    "delta_b": 0.3860658879974573,
+    "certificate": 20.535010822877087,
+    "certificate_normalized": 7.150153630384299
+   },
+   "offset_ratio": 1.0317908963292415
+  },
+  "10_0": {
+   "raw": {
+    "rho": 2.8233537460676392,
+    "delta_b": 0.7487049497506433,
+    "certificate": 357.9896396125446,
+    "certificate_normalized": 48.58947318624105
+   },
+   "centered": {
+    "rho": 1.451401993481471,
+    "delta_b": 0.2687235783377896,
+    "certificate": 20.7663989639778,
+    "certificate_normalized": 8.807600513690122
+   },
+   "offset_ratio": 0.8790282004570086
+  },
+  "10_1": {
+   "raw": {
+    "rho": 3.585690339858371,
+    "delta_b": 0.9211254512363585,
+    "certificate": 1391.4989895896113,
+    "certificate_normalized": 87.33183938601483
+   },
+   "centered": {
+    "rho": 1.7849353071470775,
+    "delta_b": 0.41793589321978514,
+    "certificate": 44.326744664444035,
+    "certificate_normalized": 9.651368456046432
+   },
+   "offset_ratio": 0.9318451290461066
+  },
+  "10_2": {
+   "raw": {
+    "rho": 2.9245517594303396,
+    "delta_b": 0.7741077612366137,
+    "certificate": 1771.3014177338039,
+    "certificate_normalized": 199.55370359169206
+   },
+   "centered": {
+    "rho": 1.5695088790724185,
+    "delta_b": 0.3251565953002536,
+    "certificate": 29.204151372888774,
+    "certificate_normalized": 11.243452610306806
+   },
+   "offset_ratio": 0.9246296093042807
+  },
+  "10_3": {
+   "raw": {
+    "rho": 2.333434014036414,
+    "delta_b": 0.6112273353290991,
+    "certificate": 1266.5785231892862,
+    "certificate_normalized": 92.9756448639635
+   },
+   "centered": {
+    "rho": 1.407449041693382,
+    "delta_b": 0.2465413444113234,
+    "certificate": 17.848949340351396,
+    "certificate_normalized": 5.3840537148919045
+   },
+   "offset_ratio": 1.0154752222525436
+  },
+  "11_0": {
+   "raw": {
+    "rho": 1.959851718891215,
+    "delta_b": 0.48537225254963234,
+    "certificate": 1012.563506515429,
+    "certificate_normalized": 177.94705804123308
+   },
+   "centered": {
+    "rho": 1.2620177178299612,
+    "delta_b": 0.16786608243677115,
+    "certificate": 6.394178355825699,
+    "certificate_normalized": 2.5367297591255724
+   },
+   "offset_ratio": 0.7124682055879357
+  },
+  "11_1": {
+   "raw": {
+    "rho": 2.107906929038027,
+    "delta_b": 0.5379055843463063,
+    "certificate": 556.4651178852722,
+    "certificate_normalized": 52.72026718076551
+   },
+   "centered": {
+    "rho": 1.552138542022001,
+    "delta_b": 0.317128668249498,
+    "certificate": 27.412290927993713,
+    "certificate_normalized": 5.599207105940442
+   },
+   "offset_ratio": 0.6872948636761999
+  },
+  "11_2": {
+   "raw": {
+    "rho": 2.2686743753156113,
+    "delta_b": 0.5909247763364402,
+    "certificate": 475.9493094107773,
+    "certificate_normalized": 44.829565196700145
+   },
+   "centered": {
+    "rho": 1.351973060597866,
+    "delta_b": 0.21753320238953236,
+    "certificate": 29.140502168640737,
+    "certificate_normalized": 6.235874880075915
+   },
+   "offset_ratio": 0.713855044680943
+  },
+  "11_3": {
+   "raw": {
+    "rho": 3.682859977126698,
+    "delta_b": 0.9404132734022757,
+    "certificate": 1859.6952511873067,
+    "certificate_normalized": 89.5713706968585
+   },
+   "centered": {
+    "rho": 1.6006049428573932,
+    "delta_b": 0.33930863477932255,
+    "certificate": 77.79526917198002,
+    "certificate_normalized": 11.373415777664523
+   },
+   "offset_ratio": 0.8650703196890203
+  },
+  "12_0": {
+   "raw": {
+    "rho": 4.646781472202325,
+    "delta_b": 1.1081158998524354,
+    "certificate": 12099.869641664827,
+    "certificate_normalized": 419.0727787018662
+   },
+   "centered": {
+    "rho": 1.746470903714337,
+    "delta_b": 0.40222130378359405,
+    "certificate": 27.357681394997794,
+    "certificate_normalized": 10.388117697682178
+   },
+   "offset_ratio": 1.526966023270709
+  },
+  "12_1": {
+   "raw": {
+    "rho": 2.187433073469704,
+    "delta_b": 0.5646194385180981,
+    "certificate": 77.32626602740878,
+    "certificate_normalized": 18.149375234281916
+   },
+   "centered": {
+    "rho": 1.4814923347318203,
+    "delta_b": 0.2835255808941138,
+    "certificate": 14.871069003073336,
+    "certificate_normalized": 6.140441742316757
+   },
+   "offset_ratio": 0.5752140912500466
+  },
+  "12_2": {
+   "raw": {
+    "rho": 3.3103404966583603,
+    "delta_b": 0.8634898090564055,
+    "certificate": 1450.6234434312023,
+    "certificate_normalized": 130.50684438610574
+   },
+   "centered": {
+    "rho": 1.710635727576193,
+    "delta_b": 0.38726628845531214,
+    "certificate": 24.504311256139218,
+    "certificate_normalized": 7.515081423194076
+   },
+   "offset_ratio": 0.923191087502597
+  },
+  "12_3": {
+   "raw": {
+    "rho": 2.190479413265374,
+    "delta_b": 0.565623327937709,
+    "certificate": 731.1437798508053,
+    "certificate_normalized": 74.13085275151182
+   },
+   "centered": {
+    "rho": 1.418896403636846,
+    "delta_b": 0.2523846296480164,
+    "certificate": 44.71618758417589,
+    "certificate_normalized": 9.35385476657494
+   },
+   "offset_ratio": 0.663403636349494
+  },
+  "13_0": {
+   "raw": {
+    "rho": 4.322579286743113,
+    "delta_b": 1.0559462133440765,
+    "certificate": 970976.1180218989,
+    "certificate_normalized": 1874.3805112113348
+   },
+   "centered": {
+    "rho": 1.6972049243621565,
+    "delta_b": 0.38158038483038775,
+    "certificate": 32.371741154139265,
+    "certificate_normalized": 9.892713559459994
+   },
+   "offset_ratio": 3.421199925042802
+  },
+  "13_1": {
+   "raw": {
+    "rho": 3.3461955114367874,
+    "delta_b": 0.8712608707963118,
+    "certificate": 474.6538167584934,
+    "certificate_normalized": 52.22879006825493
+   },
+   "centered": {
+    "rho": 1.6203091960632827,
+    "delta_b": 0.34813457108062434,
+    "certificate": 22.3740853378283,
+    "certificate_normalized": 6.789903165999902
+   },
+   "offset_ratio": 0.8143018108653253
+  },
+  "13_2": {
+   "raw": {
+    "rho": 4.32041854771466,
+    "delta_b": 1.0555855413173498,
+    "certificate": 20122.764760681745,
+    "certificate_normalized": 332.3496746955732
+   },
+   "centered": {
+    "rho": 1.9886138645525067,
+    "delta_b": 0.49588158535171956,
+    "certificate": 113.43259275740414,
+    "certificate_normalized": 25.70254832597736
+   },
+   "offset_ratio": 1.6545303975323586
+  },
+  "13_3": {
+   "raw": {
+    "rho": 3.9200361268085913,
+    "delta_b": 0.9854334750946588,
+    "certificate": 29895.27348115624,
+    "certificate_normalized": 882.0238670336987
+   },
+   "centered": {
+    "rho": 1.8537421357694108,
+    "delta_b": 0.445220286134818,
+    "certificate": 75.99227779895762,
+    "certificate_normalized": 18.96497795581199
+   },
+   "offset_ratio": 1.3900598101329813
+  },
+  "14_0": {
+   "raw": {
+    "rho": 2.2618848112290646,
+    "delta_b": 0.5887627302474161,
+    "certificate": 668.9989409683456,
+    "certificate_normalized": 42.66261186511668
+   },
+   "centered": {
+    "rho": 1.5036659491178932,
+    "delta_b": 0.2942420484413965,
+    "certificate": 60.87243407281218,
+    "certificate_normalized": 8.124273447152895
+   },
+   "offset_ratio": 0.6752650848012494
+  },
+  "14_1": {
+   "raw": {
+    "rho": 2.584225310276817,
+    "delta_b": 0.6848659297234281,
+    "certificate": 8062.040276202039,
+    "certificate_normalized": 565.9451449986684
+   },
+   "centered": {
+    "rho": 2.06750650842626,
+    "delta_b": 0.5239459354744564,
+    "certificate": 33.99721149712307,
+    "certificate_normalized": 7.070309204649777
+   },
+   "offset_ratio": 0.8543842227211063
+  },
+  "14_2": {
+   "raw": {
+    "rho": 3.4416560776069285,
+    "delta_b": 0.8915514685145473,
+    "certificate": 276.26657827728513,
+    "certificate_normalized": 26.40830805498945
+   },
+   "centered": {
+    "rho": 2.005132856464985,
+    "delta_b": 0.5018489151014806,
+    "certificate": 71.9283492529531,
+    "certificate_normalized": 15.20290376749409
+   },
+   "offset_ratio": 0.700951098558195
+  },
+  "14_3": {
+   "raw": {
+    "rho": 2.274772848755255,
+    "delta_b": 0.5928612448895583,
+    "certificate": 521.1005556193395,
+    "certificate_normalized": 59.95444559139539
+   },
+   "centered": {
+    "rho": 1.637358371333474,
+    "delta_b": 0.3556850607108287,
+    "certificate": 22.95391335936765,
+    "certificate_normalized": 7.262631096152925
+   },
+   "offset_ratio": 0.8152612479711718
+  },
+  "15_0": {
+   "raw": {
+    "rho": 2.094244918339779,
+    "delta_b": 0.5332150864189881,
+    "certificate": 117.58748754296879,
+    "certificate_normalized": 20.650675239146114
+   },
+   "centered": {
+    "rho": 1.4942092542265655,
+    "delta_b": 0.2896911011369025,
+    "certificate": 16.5736199360621,
+    "certificate_normalized": 4.397119665738203
+   },
+   "offset_ratio": 0.4817489306072042
+  },
+  "15_1": {
+   "raw": {
+    "rho": 1.746556397315939,
+    "delta_b": 0.4022566144709875,
+    "certificate": 286.4174256290891,
+    "certificate_normalized": 39.40578898435228
+   },
+   "centered": {
+    "rho": 1.3188435889643617,
+    "delta_b": 0.19963673763747009,
+    "certificate": 9.028964501594254,
+    "certificate_normalized": 2.4509331294380474
+   },
+   "offset_ratio": 0.6381103514507279
+  },
+  "15_2": {
+   "raw": {
+    "rho": 3.0986310308839276,
+    "delta_b": 0.8158154882066415,
+    "certificate": 358.0844717035079,
+    "certificate_normalized": 31.727588809277425
+   },
+   "centered": {
+    "rho": 1.7044074258097426,
+    "delta_b": 0.38463512110819875,
+    "certificate": 39.62182700910687,
+    "certificate_normalized": 6.399229372145529
+   },
+   "offset_ratio": 0.5955190589409316
+  },
+  "15_3": {
+   "raw": {
+    "rho": 3.8838983452099813,
+    "delta_b": 0.9787527205149223,
+    "certificate": 18285.164614895617,
+    "certificate_normalized": 238.85517259423236
+   },
+   "centered": {
+    "rho": 1.6041966629650015,
+    "delta_b": 0.3409255083316789,
+    "certificate": 25.77695285579857,
+    "certificate_normalized": 8.706237771053535
+   },
+   "offset_ratio": 2.0285064106766644
+  },
+  "16_0": {
+   "raw": {
+    "rho": 2.921298779260443,
+    "delta_b": 0.7733049595206689,
+    "certificate": 5777.399438375622,
+    "certificate_normalized": 317.88145601388715
+   },
+   "centered": {
+    "rho": 1.7050363139419353,
+    "delta_b": 0.38490123308104046,
+    "certificate": 114.00081007978723,
+    "certificate_normalized": 19.85603885139944
+   },
+   "offset_ratio": 0.8893430427598904
+  },
+  "16_1": {
+   "raw": {
+    "rho": 2.14010422920405,
+    "delta_b": 0.5488405308585361,
+    "certificate": 328.66477053230136,
+    "certificate_normalized": 32.59315996333733
+   },
+   "centered": {
+    "rho": 2.185010022464295,
+    "delta_b": 0.5638199486332741,
+    "certificate": 77.19505484351954,
+    "certificate_normalized": 14.91594802068416
+   },
+   "offset_ratio": 0.6317094886541615
+  },
+  "16_2": {
+   "raw": {
+    "rho": 4.338936320316458,
+    "delta_b": 1.0586707064170595,
+    "certificate": 486.2168088666806,
+    "certificate_normalized": 37.22992055215466
+   },
+   "centered": {
+    "rho": 1.6403241696000639,
+    "delta_b": 0.3569904780493863,
+    "certificate": 138.89375015376336,
+    "certificate_normalized": 21.18829404967431
+   },
+   "offset_ratio": 0.6448463051194187
+  },
+  "16_3": {
+   "raw": {
+    "rho": 3.495158430687754,
+    "delta_b": 0.9026789262248411,
+    "certificate": 4094.510630641584,
+    "certificate_normalized": 180.2682386762398
+   },
+   "centered": {
+    "rho": 1.5749555715907417,
+    "delta_b": 0.32765556587778055,
+    "certificate": 29.92443419271429,
+    "certificate_normalized": 7.63990852695564
+   },
+   "offset_ratio": 1.1909766500127417
+  },
+  "17_0": {
+   "raw": {
+    "rho": 2.5555784518971425,
+    "delta_b": 0.6768249401467933,
+    "certificate": 1623.9257923534942,
+    "certificate_normalized": 149.38028861972577
+   },
+   "centered": {
+    "rho": 1.4604104011558279,
+    "delta_b": 0.27318692445384346,
+    "certificate": 12.67321382750304,
+    "certificate_normalized": 3.8864997638768615
+   },
+   "offset_ratio": 0.9139432606245063
+  },
+  "17_1": {
+   "raw": {
+    "rho": 4.295206693777758,
+    "delta_b": 1.0513637791758332,
+    "certificate": 1269.592189261651,
+    "certificate_normalized": 148.5564961013728
+   },
+   "centered": {
+    "rho": 1.5860977704828068,
+    "delta_b": 0.3327408523063165,
+    "certificate": 24.254495617335433,
+    "certificate_normalized": 7.454744061065223
+   },
+   "offset_ratio": 0.7908791398843367
+  },
+  "17_2": {
+   "raw": {
+    "rho": 2.883631135170537,
+    "delta_b": 0.7639433157333972,
+    "certificate": 399.818686778389,
+    "certificate_normalized": 41.37337327165355
+   },
+   "centered": {
+    "rho": 1.7296062351821146,
+    "delta_b": 0.3952218145349286,
+    "certificate": 86.82573638751221,
+    "certificate_normalized": 17.503986412149533
+   },
+   "offset_ratio": 0.6335212588028871
+  },
+  "17_3": {
+   "raw": {
+    "rho": 2.8363583695665304,
+    "delta_b": 0.7520199132091737,
+    "certificate": 356.45916743911823,
+    "certificate_normalized": 35.21618543897487
+   },
+   "centered": {
+    "rho": 1.8974783237291564,
+    "delta_b": 0.4620417023916295,
+    "certificate": 40.50959381976603,
+    "certificate_normalized": 8.936550687870836
+   },
+   "offset_ratio": 0.7073222644840681
+  },
+  "18_0": {
+   "raw": {
+    "rho": 3.44584462662463,
+    "delta_b": 0.8924288259045197,
+    "certificate": 417.3455360778947,
+    "certificate_normalized": 51.535617300269365
+   },
+   "centered": {
+    "rho": 2.201473285721233,
+    "delta_b": 0.5692346688348057,
+    "certificate": 42.19969999303875,
+    "certificate_normalized": 12.813831379058657
+   },
+   "offset_ratio": 0.7573428921206807
+  },
+  "18_1": {
+   "raw": {
+    "rho": 3.7445588616662775,
+    "delta_b": 0.9523978839651054,
+    "certificate": 823.507926266411,
+    "certificate_normalized": 73.10509916080265
+   },
+   "centered": {
+    "rho": 1.8064301234818876,
+    "delta_b": 0.4265707246849536,
+    "certificate": 44.26531241046069,
+    "certificate_normalized": 13.948767532656356
+   },
+   "offset_ratio": 0.9446325011143907
+  },
+  "18_2": {
+   "raw": {
+    "rho": 2.905141413458467,
+    "delta_b": 0.769304195675438,
+    "certificate": 872.2734143959285,
+    "certificate_normalized": 86.77137077101901
+   },
+   "centered": {
+    "rho": 1.838123704552564,
+    "delta_b": 0.4391169311750068,
+    "certificate": 57.26768393473687,
+    "certificate_normalized": 14.638203204704988
+   },
+   "offset_ratio": 0.780760932965654
+  },
+  "18_3": {
+   "raw": {
+    "rho": 4.169307538697494,
+    "delta_b": 1.0299038964581,
+    "certificate": 1763.3246696280223,
+    "certificate_normalized": 165.60854788435321
+   },
+   "centered": {
+    "rho": 1.6755511499960847,
+    "delta_b": 0.37231786437513686,
+    "certificate": 17.449317310925224,
+    "certificate_normalized": 9.36721899141706
+   },
+   "offset_ratio": 1.1852349073033441
+  },
+  "19_0": {
+   "raw": {
+    "rho": 3.4418874023931374,
+    "delta_b": 0.8915999509746338,
+    "certificate": 889131.0624409325,
+    "certificate_normalized": 1757.0003651876777
+   },
+   "centered": {
+    "rho": 2.1029477062525035,
+    "delta_b": 0.5362064875959012,
+    "certificate": 21.53049748802135,
+    "certificate_normalized": 9.093463503158041
+   },
+   "offset_ratio": 3.7107921383083897
+  },
+  "19_1": {
+   "raw": {
+    "rho": 2.213391382536663,
+    "delta_b": 0.5731292889947015,
+    "certificate": 525.2440917539765,
+    "certificate_normalized": 62.417246793631065
+   },
+   "centered": {
+    "rho": 1.5089917050409531,
+    "delta_b": 0.29679243768074975,
+    "certificate": 21.589478211823614,
+    "certificate_normalized": 6.611332640344401
+   },
+   "offset_ratio": 0.7808707093747059
+  },
+  "19_2": {
+   "raw": {
+    "rho": 2.2039809368385717,
+    "delta_b": 0.5700558727423312,
+    "certificate": 258.29205603110813,
+    "certificate_normalized": 28.515704284634182
+   },
+   "centered": {
+    "rho": 1.768225475682519,
+    "delta_b": 0.4111511260265065,
+    "certificate": 56.47333964513552,
+    "certificate_normalized": 11.190839481974262
+   },
+   "offset_ratio": 0.588280822103977
+  },
+  "19_3": {
+   "raw": {
+    "rho": 4.435813574024238,
+    "delta_b": 1.0745993669830836,
+    "certificate": 3559.179896431853,
+    "certificate_normalized": 161.25715617925812
+   },
+   "centered": {
+    "rho": 1.553935805579519,
+    "delta_b": 0.31796345300375906,
+    "certificate": 109.44964224078453,
+    "certificate_normalized": 22.854888609862638
+   },
+   "offset_ratio": 1.077511506879301
+  },
+  "20_0": {
+   "raw": {
+    "rho": 3.1275338772087347,
+    "delta_b": 0.8225127558192625,
+    "certificate": 667.4040553032835,
+    "certificate_normalized": 83.82372445001279
+   },
+   "centered": {
+    "rho": 1.467957819208821,
+    "delta_b": 0.27690525694732504,
+    "certificate": 20.303788526114932,
+    "certificate_normalized": 6.683807603644176
+   },
+   "offset_ratio": 0.7918433947295513
+  },
+  "20_1": {
+   "raw": {
+    "rho": 3.7478884535588475,
+    "delta_b": 0.9530390077295723,
+    "certificate": 670.5558609964635,
+    "certificate_normalized": 84.42464112126379
+   },
+   "centered": {
+    "rho": 1.5637686984038515,
+    "delta_b": 0.3225135675938619,
+    "certificate": 28.026035656516,
+    "certificate_normalized": 8.34602420071956
+   },
+   "offset_ratio": 0.7370139295025057
+  },
+  "20_2": {
+   "raw": {
+    "rho": 2.7519335070857274,
+    "delta_b": 0.7302228058491123,
+    "certificate": 370.6740908894034,
+    "certificate_normalized": 45.54303025184631
+   },
+   "centered": {
+    "rho": 1.9364962980951181,
+    "delta_b": 0.47672437171981474,
+    "certificate": 36.838348118419646,
+    "certificate_normalized": 9.477015501236016
+   },
+   "offset_ratio": 0.6724560142100193
+  },
+  "20_3": {
+   "raw": {
+    "rho": 2.959878374447709,
+    "delta_b": 0.7827689473551174,
+    "certificate": 354.2747809999841,
+    "certificate_normalized": 59.59619197571187
+   },
+   "centered": {
+    "rho": 1.6533109404464736,
+    "delta_b": 0.3626790398873508,
+    "certificate": 23.25886812562224,
+    "certificate_normalized": 7.9170257755470645
+   },
+   "offset_ratio": 0.6535762753415577
+  },
+  "21_0": {
+   "raw": {
+    "rho": 3.4726605509577264,
+    "delta_b": 0.8980206978183913,
+    "certificate": 2058.7120675689675,
+    "certificate_normalized": 153.45567168437503
+   },
+   "centered": {
+    "rho": 1.6336710130930643,
+    "delta_b": 0.35405874218061056,
+    "certificate": 63.81323418219789,
+    "certificate_normalized": 16.0185693360779
+   },
+   "offset_ratio": 0.9180877942086403
+  },
+  "21_1": {
+   "raw": {
+    "rho": 3.5717083319115006,
+    "delta_b": 0.9183071369141543,
+    "certificate": 1756.3250826853757,
+    "certificate_normalized": 148.53234827868923
+   },
+   "centered": {
+    "rho": 1.4905982347501971,
+    "delta_b": 0.2879457281264256,
+    "certificate": 27.020789247506315,
+    "certificate_normalized": 7.828488337541342
+   },
+   "offset_ratio": 0.9266345880416688
+  },
+  "21_2": {
+   "raw": {
+    "rho": 2.6549579286984852,
+    "delta_b": 0.7043444999047407,
+    "certificate": 984.002002251507,
+    "certificate_normalized": 115.61634641999838
+   },
+   "centered": {
+    "rho": 1.4947042696486743,
+    "delta_b": 0.28993003621999036,
+    "certificate": 11.361980421984667,
+    "certificate_normalized": 4.321025428565546
+   },
+   "offset_ratio": 0.8960884676119302
+  },
+  "21_3": {
+   "raw": {
+    "rho": 2.772884963261375,
+    "delta_b": 0.7356938827694962,
+    "certificate": 1449.8671855151351,
+    "certificate_normalized": 100.79266476524757
+   },
+   "centered": {
+    "rho": 1.804610458410608,
+    "delta_b": 0.4258437259329075,
+    "certificate": 65.00475322433398,
+    "certificate_normalized": 14.158000835359301
+   },
+   "offset_ratio": 0.8813275647748086
+  },
+  "22_0": {
+   "raw": {
+    "rho": 3.2780000367934976,
+    "delta_b": 0.8564079353153601,
+    "certificate": 492.32555304802844,
+    "certificate_normalized": 37.491855377096904
+   },
+   "centered": {
+    "rho": 1.490976878686679,
+    "delta_b": 0.28812894260587973,
+    "certificate": 62.662233315459666,
+    "certificate_normalized": 10.538105341783796
+   },
+   "offset_ratio": 0.7010604872882085
+  },
+  "22_1": {
+   "raw": {
+    "rho": 2.8143627363626575,
+    "delta_b": 0.7464041430053321,
+    "certificate": 926.4482674255742,
+    "certificate_normalized": 83.3310535736908
+   },
+   "centered": {
+    "rho": 2.052461186457918,
+    "delta_b": 0.5186774699213594,
+    "certificate": 32.43053227109055,
+    "certificate_normalized": 8.380927046360949
+   },
+   "offset_ratio": 0.8373843786862932
+  },
+  "22_2": {
+   "raw": {
+    "rho": 3.2121739376715883,
+    "delta_b": 0.8417750081060054,
+    "certificate": 3190.9793861973235,
+    "certificate_normalized": 356.0407114370574
+   },
+   "centered": {
+    "rho": 1.4953981370671323,
+    "delta_b": 0.29026482043987656,
+    "certificate": 26.21795802485959,
+    "certificate_normalized": 11.748989570661898
+   },
+   "offset_ratio": 1.0071599430289644
+  },
+  "22_3": {
+   "raw": {
+    "rho": 2.281100364412641,
+    "delta_b": 0.5948649620481693,
+    "certificate": 1437.822528818176,
+    "certificate_normalized": 164.93252170520518
+   },
+   "centered": {
+    "rho": 1.8150946836810122,
+    "delta_b": 0.4300224038940265,
+    "certificate": 41.24512996176267,
+    "certificate_normalized": 12.162545245825028
+   },
+   "offset_ratio": 0.7869210770618775
+  },
+  "23_0": {
+   "raw": {
+    "rho": 4.28115149715824,
+    "delta_b": 1.0489994445522435,
+    "certificate": 1453.8334710232357,
+    "certificate_normalized": 165.09613688877275
+   },
+   "centered": {
+    "rho": 1.6845891188552515,
+    "delta_b": 0.37619837627483166,
+    "certificate": 16.332478680171153,
+    "certificate_normalized": 6.067052540685749
+   },
+   "offset_ratio": 0.9040291141038107
+  },
+  "23_1": {
+   "raw": {
+    "rho": 3.082819263419431,
+    "delta_b": 0.8121251554893653,
+    "certificate": 1427.3442589817155,
+    "certificate_normalized": 111.49132630069523
+   },
+   "centered": {
+    "rho": 1.792476217848964,
+    "delta_b": 0.42097698885857704,
+    "certificate": 49.857873141349,
+    "certificate_normalized": 10.51229904989193
+   },
+   "offset_ratio": 0.8065012077519068
+  },
+  "23_2": {
+   "raw": {
+    "rho": 4.042193141610036,
+    "delta_b": 1.0075691286700403,
+    "certificate": 924.735087066737,
+    "certificate_normalized": 87.08746369206716
+   },
+   "centered": {
+    "rho": 1.5933982331014367,
+    "delta_b": 0.3360534401232181,
+    "certificate": 25.160291093250283,
+    "certificate_normalized": 6.473214509037134
+   },
+   "offset_ratio": 0.8134262799899612
+  },
+  "23_3": {
+   "raw": {
+    "rho": 2.5769574510006557,
+    "delta_b": 0.6828343582888863,
+    "certificate": 2972.3486377652143,
+    "certificate_normalized": 275.91532160311806
+   },
+   "centered": {
+    "rho": 1.5539789279304876,
+    "delta_b": 0.31798347041325464,
+    "certificate": 15.3293473389963,
+    "certificate_normalized": 5.7257783348394256
+   },
+   "offset_ratio": 1.0089702521268384
+  },
+  "24_0": {
+   "raw": {
+    "rho": 2.0756376921922906,
+    "delta_b": 0.5267773198021168,
+    "certificate": 772.7198052244911,
+    "certificate_normalized": 80.49591662216403
+   },
+   "centered": {
+    "rho": 1.333920557590935,
+    "delta_b": 0.20783637427234575,
+    "certificate": 8.361296090303735,
+    "certificate_normalized": 3.1656905585846347
+   },
+   "offset_ratio": 0.9585076934768982
+  },
+  "24_1": {
+   "raw": {
+    "rho": 2.949099991112689,
+    "delta_b": 0.7801373693613753,
+    "certificate": 628.629314760276,
+    "certificate_normalized": 124.06871322353899
+   },
+   "centered": {
+    "rho": 1.7951499401272066,
+    "delta_b": 0.4220521751839713,
+    "certificate": 23.930728796862798,
+    "certificate_normalized": 20.582078435551853
+   },
+   "offset_ratio": 1.049592544172688
+  },
+  "24_2": {
+   "raw": {
+    "rho": 3.113717165162704,
+    "delta_b": 0.8193189515037582,
+    "certificate": 1883.307921591847,
+    "certificate_normalized": 181.81992772269214
+   },
+   "centered": {
+    "rho": 1.5265059862370678,
+    "delta_b": 0.3051166235629123,
+    "certificate": 14.295080084811193,
+    "certificate_normalized": 4.850309462408904
+   },
+   "offset_ratio": 0.9403451159502023
+  },
+  "24_3": {
+   "raw": {
+    "rho": 3.5708685289726025,
+    "delta_b": 0.9181375091223288,
+    "certificate": 1839.3714659104073,
+    "certificate_normalized": 170.0037869869884
+   },
+   "centered": {
+    "rho": 1.8197897166244728,
+    "delta_b": 0.4318858756761578,
+    "certificate": 41.56355073262458,
+    "certificate_normalized": 11.958997043827853
+   },
+   "offset_ratio": 0.8837556983631673
+  },
+  "25_0": {
+   "raw": {
+    "rho": 2.808214752244401,
+    "delta_b": 0.7448266334464552,
+    "certificate": 4289.53281493966,
+    "certificate_normalized": 254.86802927464532
+   },
+   "centered": {
+    "rho": 1.7283417395219627,
+    "delta_b": 0.39469425260722274,
+    "certificate": 16.767187604366956,
+    "certificate_normalized": 5.222065149435799
+   },
+   "offset_ratio": 1.140871237305582
+  },
+  "25_1": {
+   "raw": {
+    "rho": 3.735243701145342,
+    "delta_b": 0.950601186428835,
+    "certificate": 277.31707917368743,
+    "certificate_normalized": 61.511301865512465
+   },
+   "centered": {
+    "rho": 1.6808031605954536,
+    "delta_b": 0.37457538999061196,
+    "certificate": 11.081640536984995,
+    "certificate_normalized": 7.835247387959804
+   },
+   "offset_ratio": 0.8963395493270194
+  },
+  "25_2": {
+   "raw": {
+    "rho": 2.5970632291637594,
+    "delta_b": 0.688440569443767,
+    "certificate": 275.9474876938271,
+    "certificate_normalized": 39.160239193234126
+   },
+   "centered": {
+    "rho": 1.4743674465007661,
+    "delta_b": 0.280048061124467,
+    "certificate": 14.299134667605344,
+    "certificate_normalized": 4.5599568227614
+   },
+   "offset_ratio": 0.708529725336798
+  },
+  "25_3": {
+   "raw": {
+    "rho": 2.955988352618324,
+    "delta_b": 0.7818202924462118,
+    "certificate": 1562.9099916961438,
+    "certificate_normalized": 180.19481012111592
+   },
+   "centered": {
+    "rho": 1.828550453905018,
+    "delta_b": 0.4353502172484012,
+    "certificate": 12.281833613956481,
+    "certificate_normalized": 5.5849250650749465
+   },
+   "offset_ratio": 1.0022186817751328
+  },
+  "26_0": {
+   "raw": {
+    "rho": 3.9640032669368797,
+    "delta_b": 0.9934790757616573,
+    "certificate": 2511.4896246484677,
+    "certificate_normalized": 518.9591691637149
+   },
+   "centered": {
+    "rho": 2.0984299843158243,
+    "delta_b": 0.5346551637144882,
+    "certificate": 13.35413553449767,
+    "certificate_normalized": 10.497102292856747
+   },
+   "offset_ratio": 0.9879687434168174
+  },
+  "26_1": {
+   "raw": {
+    "rho": 2.524109576776138,
+    "delta_b": 0.6678872710160284,
+    "certificate": 1451.151510171073,
+    "certificate_normalized": 200.14667039138243
+   },
+   "centered": {
+    "rho": 1.4006937785954006,
+    "delta_b": 0.2430707932341143,
+    "certificate": 16.94832780713683,
+    "certificate_normalized": 7.596556197987931
+   },
+   "offset_ratio": 0.9021659020693499
+  },
+  "26_2": {
+   "raw": {
+    "rho": 3.038495140247668,
+    "delta_b": 0.801678492223172,
+    "certificate": 546.9039801801905,
+    "certificate_normalized": 93.01653607263353
+   },
+   "centered": {
+    "rho": 2.074565413284173,
+    "delta_b": 0.5264045738284144,
+    "certificate": 19.06056154405441,
+    "certificate_normalized": 10.30306397401467
+   },
+   "offset_ratio": 0.896341952910281
+  },
+  "26_3": {
+   "raw": {
+    "rho": 2.8264539455629976,
+    "delta_b": 0.7494965949057962,
+    "certificate": 416.8456598631713,
+    "certificate_normalized": 48.509734774809054
+   },
+   "centered": {
+    "rho": 1.6465057579763784,
+    "delta_b": 0.35970377858717123,
+    "certificate": 22.587220489669253,
+    "certificate_normalized": 6.565030067089768
+   },
+   "offset_ratio": 0.7657131434058068
+  },
+  "27_0": {
+   "raw": {
+    "rho": 4.051750746518805,
+    "delta_b": 1.0092727129552905,
+    "certificate": 1265.0758263329465,
+    "certificate_normalized": 198.51560575618248
+   },
+   "centered": {
+    "rho": 1.8422319382862022,
+    "delta_b": 0.4407273545881869,
+    "certificate": 15.921810086723006,
+    "certificate_normalized": 9.504164104180655
+   },
+   "offset_ratio": 0.9886764304960255
+  },
+  "27_1": {
+   "raw": {
+    "rho": 3.139174956638065,
+    "delta_b": 0.8251927186715748,
+    "certificate": 54859714005.09025,
+    "certificate_normalized": 1245.7959865031341
+   },
+   "centered": {
+    "rho": 1.81682133344573,
+    "delta_b": 0.4307082758219107,
+    "certificate": 36.78866051947736,
+    "certificate_normalized": 9.329337352223176
+   },
+   "offset_ratio": 58.01915823042873
+  },
+  "27_2": {
+   "raw": {
+    "rho": 3.616395713255872,
+    "delta_b": 0.9272762744844822,
+    "certificate": 380.8258721353412,
+    "certificate_normalized": 65.35410941822667
+   },
+   "centered": {
+    "rho": 1.9629932344798944,
+    "delta_b": 0.4865276002586071,
+    "certificate": 15.994391347614478,
+    "certificate_normalized": 9.819545899620989
+   },
+   "offset_ratio": 0.9576976342468729
+  },
+  "27_3": {
+   "raw": {
+    "rho": 3.6471662802015232,
+    "delta_b": 0.9333879879852892,
+    "certificate": 360.15099254780597,
+    "certificate_normalized": 59.97624019919863
+   },
+   "centered": {
+    "rho": 1.884649486644076,
+    "delta_b": 0.4571481156191651,
+    "certificate": 13.227016218240614,
+    "certificate_normalized": 7.216458137248818
+   },
+   "offset_ratio": 0.9120493806922875
+  }
+ },
+ "seq_len": 2048
+}
