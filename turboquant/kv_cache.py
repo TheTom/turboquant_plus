@@ -61,9 +61,6 @@ class KVCacheCompressor:
 
         # Decompress
         k_hat, v_hat = compressor.decompress(compressed)
-
-        # Or compress streaming (one token at a time)
-        compressor.compress_token(k_vec, v_vec, layer=0, head=0)
     """
 
     def __init__(
@@ -85,14 +82,20 @@ class KVCacheCompressor:
         self.k_bits = k_bits
         self.v_bits = v_bits
 
+        # Spawn independent child seeds so K and V quantizers use statistically
+        # independent random streams without magic offset arithmetic.
+        # Accept either an int or an already-created SeedSequence.
+        ss = seed if isinstance(seed, np.random.SeedSequence) else np.random.SeedSequence(seed)
+        k_child, v_child = ss.spawn(2)
+
         # K cache uses full TurboQuant (inner product preservation)
         self.k_quantizer = TurboQuant(
-            head_dim, bit_width=k_bits, seed=seed, norm_correction=norm_correction,
+            head_dim, bit_width=k_bits, seed=k_child, norm_correction=norm_correction,
         )
 
         # V cache uses MSE-only PolarQuant (value reconstruction)
         self.v_quantizer = TurboQuantMSE(
-            head_dim, bit_width=v_bits, seed=seed + 500, norm_correction=norm_correction,
+            head_dim, bit_width=v_bits, seed=v_child, norm_correction=norm_correction,
         )
 
     def compress(self, k_cache: np.ndarray, v_cache: np.ndarray) -> CompressedKVCache:
@@ -172,10 +175,10 @@ class KVCacheCompressor:
         n_vectors = num_layers * num_heads * seq_len
         original_bytes = n_vectors * self.head_dim * 2  # fp16
 
-        # K: b bits per coord + 32-bit norm
-        k_bits_total = n_vectors * (self.head_dim * self.k_bits + 32)
-        # V: b bits per coord (no norm needed for MSE-only)
-        v_bits_total = n_vectors * self.head_dim * self.v_bits
+        # K: b bits per coord + 64-bit norms (TurboQuant stores ||x||_2 AND ||residual||_2)
+        k_bits_total = n_vectors * (self.head_dim * self.k_bits + 64)
+        # V: b bits per coord + 32-bit norm (TurboQuantMSE/PolarQuant stores ||x||_2 only)
+        v_bits_total = n_vectors * self.head_dim * self.v_bits + n_vectors * 32
 
         compressed_bytes = (k_bits_total + v_bits_total) / 8
 

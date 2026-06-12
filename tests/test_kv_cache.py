@@ -102,8 +102,9 @@ class TestKVCacheCompressor:
         compressor = KVCacheCompressor(head_dim=128, k_bits=3, v_bits=3)
         stats = compressor.memory_stats(seq_len=1024, num_layers=32, num_heads=32)
 
-        # K: 3 bits/val + norm overhead, V: 3 bits/val
-        # Ratio vs fp16 (16 bits): 16 / ((3+3)/2 + overhead) ≈ 2.5-3x
+        # K: 3 bits/val + 64-bit norms (TurboQuant: vector_norm + residual_norm)
+        # V: 3 bits/val + 32-bit norm (TurboQuantMSE: single vector_norm)
+        # Ratio vs fp16 (16 bits/val): 16*128 / ((128*3 + 64 + 128*3 + 32)/2) ≈ 2.37x
         assert stats["compression_ratio"] > 2.0
         assert stats["compressed_mb"] < stats["original_mb"]
 
@@ -123,6 +124,7 @@ class TestKVCacheCompressor:
         assert compressed.head_dim == 64
         assert compressed.k_bit_width == 3
         assert compressed.v_bit_width == 3
+
 
 
 def _softmax(x):
