@@ -78,7 +78,7 @@ class OutlierTurboQuant:
         x_hat = oq.dequantize(compressed)
     """
 
-    def __init__(self, d: int, target_bits: float, seed: int = 42):
+    def __init__(self, d: int, target_bits: float, seed: int = 42, outlier_idx: np.ndarray = None):
         self.d = d
         self.target_bits = target_bits
 
@@ -91,11 +91,16 @@ class OutlierTurboQuant:
         # Effective bit rate
         self.effective_bits = (n_outlier * high_bits + n_normal * low_bits) / d
 
-        # Channel indices (fixed — outlier channels are the first n_outlier)
-        # In practice, you'd pick channels with highest activation magnitude.
-        # For data-oblivious quantization (paper's approach), we use fixed split.
-        self.outlier_idx = np.arange(n_outlier)
-        self.normal_idx = np.arange(n_outlier, d)
+        # Channel indices
+        if outlier_idx is not None:
+            if len(outlier_idx) != n_outlier:
+                raise ValueError(f"Expected {n_outlier} outlier indices, got {len(outlier_idx)}")
+            self.outlier_idx = np.array(outlier_idx)
+            self.normal_idx = np.setdiff1d(np.arange(d), self.outlier_idx)
+        else:
+            # Fallback to fixed split (first n_outlier channels)
+            self.outlier_idx = np.arange(n_outlier)
+            self.normal_idx = np.arange(n_outlier, d)
 
         rng = np.random.default_rng(seed)
 
