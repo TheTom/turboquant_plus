@@ -102,10 +102,24 @@ class TestKVCacheCompressor:
         compressor = KVCacheCompressor(head_dim=128, k_bits=3, v_bits=3)
         stats = compressor.memory_stats(seq_len=1024, num_layers=32, num_heads=32)
 
-        # K: 3 bits/val + norm overhead, V: 3 bits/val
-        # Ratio vs fp16 (16 bits): 16 / ((3+3)/2 + overhead) ≈ 2.5-3x
-        assert stats["compression_ratio"] > 2.0
+        # Combined K/V fp16 baseline: 32 bits/value pair.
+        # For 3-bit K and V, actual stored metadata gives ~4.74x compression.
+        assert stats["compression_ratio"] > 4.0
         assert stats["compressed_mb"] < stats["original_mb"]
+
+    def test_memory_stats_exact_accounting(self):
+        """Memory stats should match the actual K/V storage layout."""
+        compressor = KVCacheCompressor(head_dim=128, k_bits=3, v_bits=3)
+        stats = compressor.memory_stats(seq_len=1, num_layers=1, num_heads=1)
+
+        # One K vector and one V vector at head_dim=128:
+        # - Original fp16 K/V pair: 128 * 2 bytes * 2 tensors = 512 bytes
+        # - K compressed: 128 * 3 bits + 64 bits of norms = 448 bits = 56 bytes
+        # - V compressed: 128 * 3 bits + 32-bit norm = 416 bits = 52 bytes
+        # - Total compressed = 108 bytes
+        assert stats["original_mb"] == pytest.approx(512 / 1024 / 1024)
+        assert stats["compressed_mb"] == pytest.approx(108 / 1024 / 1024)
+        assert stats["compression_ratio"] == pytest.approx(512 / 108)
 
     def test_metadata_stored(self):
         """Compressed cache should store correct metadata."""
