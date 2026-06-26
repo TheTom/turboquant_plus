@@ -1,76 +1,40 @@
 # TurboQuant+
 
-> ### [Getting Started Guide](docs/getting-started.md) | [Configuration Recommendations](docs/turboquant-recommendations.md) | [llama.cpp Fork](https://github.com/TheTom/llama-cpp-turboquant) | [Swift MLX Fork](https://github.com/ekryski/mlx-swift-lm/tree/alpha) | [vllm-swift](https://github.com/TheTom/vllm-swift) | [Commercial Support](https://x.com/no_stp_on_snek)
+> **🚀 TurboQuant KV cache compression is now in [vLLM](https://github.com/vllm-project/vllm)** ([PR #38479](https://github.com/vllm-project/vllm/pull/38479), merged April 2026): `--kv-cache-dtype turboquant_k8v4` and friends, with fused Triton store/decode kernels. The PR discussion drew on the asymmetric K/V findings from this repo. **Upstream llama.cpp has merged the core idea too**: Hadamard KV cache rotation ([#21038](https://github.com/ggml-org/llama.cpp/pull/21038), citing TurboQuant directly) with fast WHT kernels on CPU ([#22631](https://github.com/ggml-org/llama.cpp/pull/22631)), CUDA ([#23615](https://github.com/ggml-org/llama.cpp/pull/23615)), and Vulkan ([#23687](https://github.com/ggml-org/llama.cpp/pull/23687)). Rotation + the stock q4_0 cache is essentially turbo4's rotation stage; the PolarQuant codebook, norm extraction, and asymmetric policies remain here and in the fork.
 
-> **🍎 On Apple Silicon and want the fastest path?** Use [ekryski/mlx-swift-lm](https://github.com/ekryski/mlx-swift-lm/tree/alpha) — Eric Kryski's Swift MLX implementation that I've been actively collaborating on. Native Swift, ~2.5x faster decode than Python mlx-lm, full TurboQuant+ support including turbo4v2 (4-bit K + 2-bit V). 144 tok/s on Qwen3.5-35B-A3B MoE at 4K on M5 Max. For OpenAI-compatible serving, use [vllm-swift](https://github.com/TheTom/vllm-swift) — a native Swift/Metal backend for vLLM built on mlx-swift-lm. No Python in the inference hot path, works with Hermes, OpenCode, and any OpenAI client. This llama.cpp repo is for cross-platform deployment (CUDA, ROCm, CPU, Metal).
+> ### [Getting Started Guide](docs/getting-started.md) | [Configuration Recommendations](docs/turboquant-recommendations.md) | [Benchmarks](docs/benchmarks.md) | [Commercial Support](https://x.com/no_stp_on_snek)
 
-## Prebuilt Binaries
+Implementation of [TurboQuant](https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/) (ICLR 2026) with implementation work, experiments, and follow-on findings beyond the base paper. Compresses transformer KV cache **3.8-6.4x** using PolarQuant + Walsh-Hadamard rotation, at near q8_0 prefill speed and ~0.9x decode throughput at long context. Validated end-to-end from 1.5B to **104B at 128K context on a MacBook** (turbo3, PPL 4.024, 74 GB peak memory).
 
-Download ready-to-run builds from [Releases](https://github.com/TheTom/llama-cpp-turboquant/releases). No build tools needed.
+This repository is the **research home**: the Python reference implementation, the validation papers, and the benchmark data. To run TurboQuant in an inference engine, pick from the table below. Pieces that prove useful and stable get upstreamed incrementally as small, reviewable patches.
 
-| Platform | Download |
-|----------|----------|
-| Mac (Apple Silicon, Metal) | `turboquant-plus-*-macos-arm64-metal.tar.gz` |
-| Windows (CUDA 12.4) | `turboquant-plus-*-windows-x64-cuda12.4.zip` |
+## Run It Today
 
-Unpack and run. Includes `llama-server`, `llama-bench`, `llama-cli`, and all tools.
+| Engine | Platform | Status | Notes |
+|--------|----------|--------|-------|
+| [vLLM](https://github.com/vllm-project/vllm) | CUDA / ROCm, datacenter | **Upstream, merged** | `--kv-cache-dtype turboquant_k8v4` and friends ([PR #38479](https://github.com/vllm-project/vllm/pull/38479)) |
+| [llama.cpp](https://github.com/ggml-org/llama.cpp) | All backends | **Upstream, rotation merged** | Hadamard KV cache rotation ([#21038](https://github.com/ggml-org/llama.cpp/pull/21038)) + fast WHT kernels (CPU [#22631](https://github.com/ggml-org/llama.cpp/pull/22631), CUDA [#23615](https://github.com/ggml-org/llama.cpp/pull/23615), Vulkan [#23687](https://github.com/ggml-org/llama.cpp/pull/23687)). Rotation + q4_0 cache approximates turbo4; full PolarQuant codec is in the fork below |
+| [llama-cpp-turboquant](https://github.com/TheTom/llama-cpp-turboquant) | Metal, CUDA, HIP, CPU | **Production fork** | turbo2/3/4 KV cache + TQ3_1S/TQ4_1S weight formats; [prebuilt binaries](https://github.com/TheTom/llama-cpp-turboquant/releases) for Mac (Metal) and Windows (CUDA) |
+| [mlx-swift-lm](https://github.com/ekryski/mlx-swift-lm/tree/alpha) | Apple Silicon, Swift | Active collaboration | Fastest Apple path: ~2.5x faster decode than Python mlx-lm, full TQ+ support including turbo4v2. 144 tok/s on Qwen3.5-35B-A3B MoE at 4K on M5 Max |
+| [vllm-swift](https://github.com/TheTom/vllm-swift) | Apple Silicon, Swift | Active | OpenAI-compatible serving built on mlx-swift-lm; no Python in the inference hot path |
+| [Atlas](https://github.com/Avarok-Cybersecurity/atlas) | Rust, Metal | Integrated | turbo4 KV cache append/decode kernels |
+| [mlxcel](https://github.com/lablup/mlxcel) | Rust, MLX | Community port | [Turbo KV cache docs](https://github.com/lablup/mlxcel/blob/main/docs/turbo-kv-cache.md). Thanks to [@inureyes](https://github.com/inureyes) and the Lablup team for the careful port and upstream attribution |
+| [MLX Python fork](https://github.com/TheTom/mlx/tree/feature/turboquant-plus) | Apple Silicon, Python | Experimental | `TurboKVCache` drop-in for mlx-lm and mlx-vlm; see [docs/mlx-port.md](docs/mlx-port.md) |
+| [turboquant-pytorch](https://github.com/tonbistudio/turboquant-pytorch) | PyTorch | Independent implementation | From-scratch PyTorch TurboQuant for KV cache; applies this repo's layer-adaptive compression and Sparse V findings |
+| [turboquant-vllm](https://github.com/varjoranta/turboquant-vllm) | CUDA, vLLM package | Community package | TQ+ KV cache for vLLM with fused CUDA kernels; builds on this repo's block_size=128 and K-dominance research |
+| [Quansloth](https://github.com/PacifAIst/Quansloth) | Local server product | Community product | Air-gapped local AI server built on the TurboQuant+ stack |
 
----
+## Key Findings
 
-Implementation of [TurboQuant](https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/) (ICLR 2026) with implementation work, experiments, and follow-on findings beyond the base paper. KV cache compression for local LLM inference.
-
-## Note
-
-This repository is an experimental integration and research workspace for TurboQuant-related work targeting `llama.cpp`. The goal is to make it easier to compare approaches, collect reproducible benchmark and quality data, and share implementation details across hardware and backends. It is not intended as a separate long-term fork or a proposal to merge the branch as a whole.
-
-If individual pieces prove useful and stable, the intent is to upstream them incrementally as small, reviewable patches in line with `llama.cpp`'s normal contribution process.
-
-## What's In This Branch
-
-- Experimental TurboQuant-related integrations for `llama.cpp`
-- Benchmark and quality validation across models, contexts, and hardware
-- Backend-specific implementation work and performance experiments
-- Documentation and writeups intended to make testing and reproduction easier
-- Candidate ideas that may be worth upstreaming individually if they prove stable
-
-## Current Findings
-
-Three follow-on findings in this branch have been independently validated by multiple researchers across different hardware and backends:
+Three follow-on findings, independently validated by multiple researchers across different hardware and backends:
 
 1. **V compression is free.** Compressing the value cache (even down to 2 bits) has zero measurable effect on attention quality when key precision is maintained. Confirmed on Metal (M5 Max), CUDA RTX 4090 (@sztlink), and CUDA RTX 3090 (@HyperionMS2040). See [asymmetric K/V paper](docs/papers/asymmetric-kv-compression.md).
 2. **All quality degradation comes from K compression.** This is why asymmetric configs (q8_0-K + turbo-V) rescue models where symmetric fails. Validated across Qwen, Llama, Mistral, and Command-R+ families. See [M5 Max stress test](docs/papers/m5-max-stress-test.md).
 3. **Boundary layers are disproportionately sensitive.** Protecting the first 2 + last 2 layers at higher precision recovers 37-91% of the quality gap. See [Boundary V paper](docs/papers/layer-aware-v-compression.md).
 
-Additional experiments and writeups: [Sparse V dequant](docs/papers/sparse-v-dequant.md) (+22.8% decode), [block size optimization](docs/papers/block-size-experiment.md) (5.12x compression), [turbo4 resurrection](docs/papers/turbo4-resurrection.md) (QJL hurts, PolarQuant works), [EDEN optimal-S response](docs/papers/eden-optimal-s-revisit.md) (rotation is first-order, scale is second-order).
+Additional experiments and writeups: [Sparse V dequant](docs/papers/sparse-v-dequant.md) (+22.8% decode at 32K, not TurboQuant-specific), [block size optimization](docs/papers/block-size-experiment.md) (5.12x compression), [turbo4 resurrection](docs/papers/turbo4-resurrection.md) (QJL hurts, PolarQuant works), [EDEN optimal-S response](docs/papers/eden-optimal-s-revisit.md) (rotation is first-order, scale is second-order).
 
-Compresses transformer KV cache **3.8-6.4x** using PolarQuant + Walsh-Hadamard rotation. Near q8_0 prefill speed and ~0.9x decode throughput at long context (Apple Silicon). Full format family: turbo2 (2-bit, 6.4x), turbo3 (3-bit, 4.6-5.1x), turbo4 (4-bit, 3.8x). turbo3 compression depends on storage block size; see [block size study](docs/papers/block-size-experiment.md).
-
-**Sparse V:** Attention-gated KV cache decoding that skips low-weight V positions during inference. Up to +22.8% decode speed at 32K context, validated on wikitext-103 (50 chunks, CI +/-0.021) with no measurable PPL change. Not TurboQuant-specific; validated across q8_0, q4_0, and turbo3 KV formats. ~1% perplexity increase vs q8_0 from compression; Sparse V itself introduces no additional degradation (ON/OFF delta = 0.000).
-
-Validated end-to-end from 1.5B to **104B** on M5 Max via llama.cpp Metal. **104B at 128K context on a MacBook** with turbo3 (PPL 4.024, 74 GB peak memory).
-
-## Status: v1 Complete, Speed Optimized, Community-Tested
-
-- 511+ Python tests, 100% code coverage on diagnostics
-- C port integrated into llama.cpp with Metal GPU kernels
-- `--cache-type-k turbo3 --cache-type-v turbo3` works on Apple Silicon (turbo2/turbo3/turbo4 all supported)
-- **turbo2 Metal support**: 2-bit, 6.4x compression, +6.48% PPL — for extreme memory pressure or asymmetric K/V
-- **q8_0 prefill speed parity achieved** (2747 vs 2694 tok/s)
-- **Norm correction**: PPL beats q8_0 on CUDA (-1.17%), +1.1% on Metal (ported from @spiritbuun)
-- **4-mag LUT**: auto-detected on M1/M2/M3/M4, +38-45% decode at long context
-- **Layer-adaptive mode 2**: q8_0 quality at 3.5x compression (last 8 layers at q8_0)
-- **Temporal decay**: 30-34% memory savings at long context (experiment branch)
-- **NIAH retrieval**: 9/9 single needle with sparse V (vs 7/9 baseline), 100% multi-key through 32K. 30/30 on Llama-70B, 10/10 on Command-R+ 104B
-- **14 decode approaches tested** on M2 Pro — comprehensive hardware analysis
-- **Stress tested up to 104B**: Command-R+ 104B Q4_K_M at 128K context (PPL 4.024). Llama-70B Q4_K_M at 48K (PPL 4.019). turbo3 prefill faster than q8_0 at 32K on both models
-- Community: 30+ testers across M1/M2/M3/M5 Mac, RTX 3080 Ti/3090/4090/5090, AMD 6800 XT/9070 XT
-- Rotation Gaussianization validated on real Qwen3 KV tensors (kurtosis 900 → 2.9)
-
----
-
-## Quality and Speed (M5 Max 128GB)
-
-### Top-of-Tree Results
+## Quality at a Glance (M5 Max 128GB)
 
 | Cache Type | Bits/val | Compression | PPL (wikitext-2, 512c) | vs q8_0 |
 |------------|----------|-------------|----------------------|---------|
@@ -83,291 +47,15 @@ Validated end-to-end from 1.5B to **104B** on M5 Max via llama.cpp Metal. **104B
 
 turbo4 (4-bit PolarQuant) has the best quality after q8_0 — closer to q8_0 than q4_0, at better compression. turbo3 trades quality for maximum compression. turbo2 (2-bit) trades more quality for extreme compression — best used asymmetrically.
 
-> †turbo3 at default block_size=32. At block_size=128, turbo3 achieves 3.125 bits/val and 5.12x compression with identical PPL, validated on Metal across 3 model architectures, 3 context lengths (512–32K), and 2 Apple Silicon platforms. Tested on both asymmetric (`q8_0-K + turbo3-V`) and symmetric (`turbo3/turbo3`) paths. On the tested M2 Pro setup (Qwen2.5-1.5B, `q8_0-K + turbo3-V`), block_size=128 also improved decode by 3–7%; this gain was not observed on M5 Max. Earlier turbo3 figures (4.6x) reflect the block_size=32 default. CUDA not yet validated. See [block size study](docs/papers/block-size-experiment.md).
+> †turbo3 at default block_size=32. At block_size=128, turbo3 achieves 3.125 bits/val and 5.12x compression with identical PPL. See [block size study](docs/papers/block-size-experiment.md).
 
-> **Important: choosing the right config for your model.** TurboQuant quality depends on your base weight quantization. Models with Q8_0+ weights work well with symmetric turbo (e.g., `-ctk turbo3 -ctv turbo3`). Some low-bit models with Q4_K_M weights may benefit from asymmetric K/V: use `-ctk q8_0 -ctv turbo4` to keep K precision high while compressing V (tested on Qwen2.5-7B Q4_K_M). K precision is the dominant quality factor because it controls attention routing via softmax. Note: not all Q4_K_M models are sensitive — Mistral-24B, Llama-70B, and Command-R+ 104B all handle symmetric turbo fine. Bigger models absorb quantization stacking better (104B: +3.6% vs 70B: +11.4% for turbo3). Validate on your specific model. See **[Configuration Recommendations](docs/turboquant-recommendations.md)** for the full tested matrix and practical guidance.
->
-> Validated on Metal (Apple Silicon). CUDA mixed q8_0 × turbo parity is not yet verified.
+> **Important: choosing the right config for your model.** TurboQuant quality depends on your base weight quantization. Models with Q8_0+ weights work well with symmetric turbo (e.g., `-ctk turbo3 -ctv turbo3`). Some low-bit models with Q4_K_M weights may benefit from asymmetric K/V: use `-ctk q8_0 -ctv turbo4` to keep K precision high while compressing V. K precision is the dominant quality factor because it controls attention routing via softmax. Bigger models absorb quantization stacking better (104B: +3.6% vs 70B: +11.4% for turbo3). Validate on your specific model. See **[Configuration Recommendations](docs/turboquant-recommendations.md)** for the full tested matrix.
 
-### Asymmetric K/V (NEW)
-
-TurboQuant supports independent K and V cache types. In current testing, keeping K at q8_0 while compressing V with turbo rescues quality on low-bit models where symmetric turbo degrades:
-
-| Model (weights) | K | V | PPL | vs q8_0 |
-|-----------------|---|---|------|---------|
-| Qwen2.5-7B (Q4_K_M) | q8_0 | turbo4 | 6.64 | +1.0% |
-| Qwen2.5-7B (Q4_K_M) | q8_0 | turbo3 | 6.71 | +2.0% |
-| Qwen2.5-7B (Q4_K_M) | turbo3 | turbo3 | 3556 | catastrophic |
-
-```bash
-# Validated starting point for low-bit models
-# (tested on Qwen2.5-7B Q4_K_M; not all Q4_K_M models need this)
-llama-server -m model-Q4_K_M.gguf -ctk q8_0 -ctv turbo4 -fa 1
-```
-
-### Boundary V (Layer-Aware V Compression)
-
-Not all V layers need the same precision. Boundary V protects the first 2 + last 2 layers with q8_0-V while compressing all remaining layers with turbo2-V. 15 lines of code, no speed penalty.
-
-| Model | turbo2 PPL | Boundary V PPL | turbo3 PPL | Quality recovered |
-|-------|-----------|---------------|-----------|-------------------|
-| phi-4-Q8_0 (40L) | 4.835 | 4.784 | 4.742 | 55% |
-| Qwen2.5-7B Q4_K_M (28L) | 6.911 | 6.835 | 6.707 | 37% |
-| Qwen3.5-35B MoE (64L) | 5.257 | 5.148 | 5.137 | 91% |
-| Qwen3.5-27B Dense (36L) | 6.534 | 6.423 | 6.273 | 42% |
-
-Validated at 512 and 8K context. NIAH retrieval passed. Benefit scales with model depth (91% on 64-layer MoE). Independently validated by @Corianas_ on NanoGPT.
-
-**Enabled by default.** Activate manually on older builds with `TURBO_LAYER_ADAPTIVE=7` env var.
-
-```bash
-# Boundary V — boundary layers q8_0-V, rest turbo2-V
-llama-server -m model.gguf -ctk q8_0 -ctv turbo2 -fa 1
-```
-
-See [full paper](docs/papers/layer-aware-v-compression.md).
-
-### Prefill Context Scaling (Verified 2K-32K)
-
-| Context | turbo4 tok/s | turbo3 tok/s | q8_0 tok/s | turbo4/q8_0 | turbo3/q8_0 |
-|---------|-------------|-------------|-----------|------------|------------|
-| 2K | 2682 | 2708 | 2665 | 1.01x | 1.02x |
-| 4K | 2370 | 2289 | 2255 | 1.05x | 1.01x |
-| 8K | 2041 | 2054 | 2002 | 1.02x | 1.03x |
-| 16K | 1621 | 1698 | 1605 | 1.01x | 1.06x |
-| 32K | 1141 | 1204 | 1098 | 1.04x | 1.10x |
-
-**Prefill: both turbo3 and turbo4 match or exceed q8_0 speed.** Compressed cache uses less bandwidth.
-
-### Decode Speed — MoE (M5 Max 128GB, Qwen3.5-35B-A3B, Sparse V)
-
-| Config | Short (tg128) | pp32768+tg128 | Short vs q8_0 |
-|--------|--------------|---------------|--------------|
-| q8_0 | 85.71 tok/s | 1173.91 tok/s | — |
-| **turbo4** | **79.87 tok/s** | **1060.12 tok/s** | **0.93x** |
-| turbo3 | 76.84 tok/s | 1141.74 tok/s | 0.90x |
-
-turbo4 decode is faster than turbo3 due to simpler nibble packing and direct-extract dequant.
-
-**Real-world server benchmark (70-page PDF, ~24K context):**
-
-| Config | Prefill tok/s | Decode tok/s | Decode vs q8_0 |
-|--------|-------------|-------------|---------------|
-| q8_0 | 1449.9 | 68.2 | — |
-| turbo4 | 1405.9 | 63.7 | 0.93x |
-| turbo3 | 1417.8 | 53.3 | 0.78x |
-
-### NIAH Retrieval (turbo4)
-
-| Test | q8_0 | turbo4 | turbo3 + sparse V |
-|------|------|--------|-------------------|
-| Single needle (33 positions) | 30/33 (90.9%) | **31/33 (93.9%)** | 9/9 (3-pos) |
-
-turbo4 beats q8_0 on retrieval (31/33 vs 30/33). Shared failure at 8K/100% is a model weakness, not quantization. See [turbo4 resurrection](docs/papers/turbo4-resurrection.md) for the full investigation.
-
-### Large Model Stress Tests (M5 Max 128GB)
-
-| Model | Params | Weights | Config | PPL | vs q8_0 | Max Context | NIAH |
-|-------|--------|---------|--------|-----|---------|-------------|------|
-| Llama-3.1-70B | 70B | Q4_K_M | turbo4/turbo4 | 3.461 | +6.3% | 48K | 30/30 |
-| Llama-3.1-70B | 70B | Q4_K_M | turbo3/turbo3 | 3.629 | +11.4% | 48K | 30/30 |
-| **Command-R+ 104B** | **104B** | **Q4_K_M** | **turbo4/turbo4** | **6.312** | **+1.9%** | **128K** | **10/10** |
-| **Command-R+ 104B** | **104B** | **Q4_K_M** | **turbo3/turbo3** | **6.415** | **+3.6%** | **128K** | **10/10** |
-
-turbo3 prefill is faster than q8_0 at 32K on both models (70B: 80.8 vs 75.2 t/s, 104B: 64.5 vs 62.3 t/s). Smaller KV cache = less memory bandwidth during attention.
-
-104B at 128K requires raising macOS GPU memory cap: `sudo sysctl iogpu.wired_limit_mb=117964` (90% of 128GB). Without this, Metal stalls at ~49K context on 70B+ models. See [Getting Started Guide](docs/getting-started.md) for per-RAM values.
-
-See [M5 Max stress test](docs/papers/m5-max-stress-test.md) for the full data.
-
-### KL Divergence vs f16
-
-| Cache | Mean KLD | Δp RMS | Same top-p % |
-|-------|----------|--------|-------------|
-| q8_0 | 0.001549 | 1.23% | 98.43% |
-| **turbo4** | **0.009633** | **2.71%** | **95.98%** |
-| q4_0 | 0.008091 | 2.75% | 95.83% |
-| turbo3 | 0.016145 | 4.09% | 94.31% |
-
-turbo4 KLD is 40% lower than turbo3. Same top-p agreement matches q4_0.
-
-### Decode Speed — Dense (M5 Max 128GB, Qwen3.5-27B, Sparse V)
-
-| Test | With sparse V | Without | Delta |
-|------|-------------|---------|-------|
-| Short (tg128) | 16.73 | 16.61 | +0.7% |
-| 8K (pp8192+tg128) | 298.27 | 294.52 | +1.3% |
-| 16K (pp16384+tg128) | 316.98 | 311.24 | +1.8% |
-
-Dense models see smaller gains (attention is <5% of decode — FFN dominates). No regressions. Safe to enable by default.
-
-**Sparse V dequant** skips V dequantization for positions where softmax attention weight < 1e-6. At long context, most attention weights are negligible — this saves approximately half the total dequant cost. +22.8% decode at 32K vs turbo3 without sparse V, pushing the ratio from 0.76x to 0.93x of q8_0. Sparse V introduces no additional PPL degradation beyond the underlying compression (validated at 32K with 50 chunks on wikitext-103, CI ±0.021). Benefit scales with context length. This is implemented as a minimal kernel modification.
-
-Sparse V is not TurboQuant-specific: on q8_0 KV cache it yields a +5% decode speedup with identical PPL and NIAH, confirming this is a general attention-aware optimization rather than a compression-specific trick. See the [full paper](docs/papers/sparse-v-dequant.md).
-
-On M2/M1 (pre-M5), the auto-detected 4-mag LUT gives an additional +38-45% decode improvement at long context, and is additive with sparse V. See [Decode Speed Hardware Analysis](docs/decode-speed-hardware-analysis.md) for the full 14-approach experiment log, and [Context Scaling Deep Dive](docs/context-scaling-deep-dive.md) for the M5 Max optimization journey.
-
-### Community Hardware: CUDA (RTX 3090)
-
-Tested by @jaker86 on RTX 3090. Model: Qwen3.5-9B Q4_K_M. Build from [signalnine's CUDA fork](https://github.com/signalnine/llama-cpp-turboquant-cuda) PR #24.
-
-| Config | K | V | PPL (wikitext-2) | vs q8_0 | Decode t/s | Prefill t/s |
-|--------|---|---|-----------------|---------|-----------|------------|
-| q8_0 | q8_0 | q8_0 | 8.2018 | — | 102.69 | 3774 |
-| turbo3 | turbo3 | turbo3 | 8.3124 | +1.3% | 98.68 | 3707 |
-| turbo4 | turbo4 | turbo4 | 8.3012 | +1.2% | 95.87 | 3628 |
-| turbo2 | turbo2 | turbo2 | 8.6639 | +5.6% | 98.05 | 3680 |
-| mixed | turbo3 | turbo2 | 8.5312 | +4.0% | 97.32 | 3524 |
-| mixed | turbo2 | turbo3 | 8.4356 | +2.9% | 96.61 | 3608 |
-
-CUDA decode within 4-7% of q8_0 across all configs. Prefill within 4-7%. Mixed K/V configs working correctly after PR #24 fix (prefill was 329 t/s before fix, now 3500+).
-
-### Community Hardware: M1 Max 64GB
-
-Tested by @mariotomich. Model: Qwen3.5-35B-A3B Q8_0, Sparse V ON. Real prompt: 38,596 tokens (70-pages.md), llama-cli with Qwen chat template.
-
-| KV | Prefill t/s | Decode t/s | vs q8_0 |
-|----|------------|-----------|---------|
-| q8_0 | 399.0 | 12.4 | — |
-| turbo2 | 406.2 | 10.8 | -12.9% |
-| turbo3 | 370.4 | 7.7 | -37.9% |
-| **turbo4** | **365.0** | **16.6** | **+33.9%** |
-
-**turbo4 decode beats q8_0 by +33.9% at long context on M1 Max.** At 38K tokens, KV bandwidth savings outweigh dequant cost. Sparse V amplifies the gain. turbo3 decode regression (-37.9%) is the known M1 L2 cache wall — turbo3 dequant complexity causes cache eviction on pre-M5 hardware.
-
-**Asymmetric q8_0-K + turbo4-V (recommended for pre-M5):**
-
-Synthetic (llama-bench):
-
-| KV | pp512 t/s | tg128 t/s | pp65536+tg128 t/s |
-|----|-----------|-----------|-------------------|
-| q8_0 | 876.1 | 39.55 | 275.0 |
-| q8_0-K + turbo4-V | 894.9 (+2.2%) | 38.64 (-2.3%) | 271.0 (-1.5%) |
-
-Asymmetric avoids the turbo3 decode regression (-37.9%) on pre-M5 hardware.
-
-KV cache memory at 262K context:
-
-| KV | Cache MiB | Saved | Compression |
-|----|-----------|-------|-------------|
-| q8_0 | 2782 | — | baseline |
-| turbo4 | 1422 | 1360 MiB | 1.96x |
-| q8_0-K + turbo4-V | 2102 | 680 MiB | 1.32x |
-
-PPL on real document (70-pages.md, ctx=512, 20 chunks): q8_0 16.29, turbo4 16.44 (+0.93%), turbo3 16.42 (+0.76%), turbo2 17.22 (+5.69%).
-
-### Community Hardware: AMD RX 9070 XT (RDNA 4, gfx1201, Windows 11)
-
-First AMD GPU validation. First attempt — no debugging, no analysis, just raw testing out of the box. Qwen2.5-7B Q4_K_M on HIP SDK 7.1. gfx1201 detected natively — no `HSA_OVERRIDE_GFX_VERSION` needed.
-
-| K | V | PPL (wikitext-2) | vs q8_0 | Prefill t/s | Decode t/s | Status |
-|---|---|-----------------|---------|-------------|-----------|--------|
-| q8_0 | q8_0 | 7.794 | baseline | 589.5 | 84.7 | OK |
-| **q8_0** | **turbo4** | **7.876** | **+1.0%** | **588.4** | **86.8** | **recommended** |
-| q8_0 | turbo3 | NaN | catastrophic | 605.1 | 87.8 | broken (HIP-specific) |
-| turbo4 | turbo4 | 401.4 | catastrophic | 556.4 | 84.0 | broken (Q4_K_M) |
-| turbo3 | turbo3 | 81,277 | catastrophic | 580.3 | 86.0 | broken (Q4_K_M) |
-
-**Key findings:**
-- **q8_0-K + turbo4-V confirmed on AMD** — +1.0% PPL, no speed penalty, 25% KV memory savings
-- Symmetric turbo catastrophic on Q4_K_M, consistent with Metal/CUDA results
-- q8_0/turbo3 produces NaN on this model (Metal gets +2.0%) — HIP-specific, under investigation
-- Speed flat across configs (~85 t/s decode, ~590 t/s prefill at pp512)
-- Context scaling: 0.96-0.99x vs q8_0 at pp2048-8192
-
-See [Windows RDNA 4 Setup Guide](docs/windows-rdna4-setup.md) for build instructions and 9 gotchas.
-
-### Speed Optimization Journey
-
-| Optimization | Prefill tok/s | vs q8_0 |
-|-------------|--------------|---------|
-| turbo3 fp32 WHT (initial) | 739 | 0.27x |
-| + fp16 WHT | 1074 | 0.40x |
-| + half4 vectorized butterfly | 1411 | 0.52x |
-| + graph-side WHT rotation | 2095 | 0.78x |
-| + block-32 storage | 2747 | 1.02x |
-| **+ optimized dequant** | **2524** | **0.98x** |
-
-> The final number (2524 at 4K) is lower than the peak (2747 at 512) because longer context is naturally slower. The key metric is the **ratio** vs q8_0, which stays flat at 0.99x. See [Speed Experiments](docs/speed-experiments.md) for the full journey.
-
-### Compression Quality (Python Prototype)
-
-| Config | Compression | Cosine Sim | MSE |
-|--------|-------------|------------|-----|
-| TurboQuant 2-bit | 7.1× | 0.79 | 0.0047 |
-| TurboQuant 2.5-bit (outlier) | **4.9×** | 0.86 | 0.0029 |
-| TurboQuant 3-bit | 4.9× | 0.91 | 0.0018 |
-| TurboQuant 3.5-bit (outlier) | **3.8×** | 0.95 | 0.0009 |
-| TurboQuant 4-bit | 3.8× | 0.96 | 0.0007 |
-
-### Needle-In-A-Haystack (NIAH) Retrieval
-
-Tested using [Kamradt](https://github.com/gkamradt/LLMTest_NeedleInAHaystack) and [NVIDIA RULER](https://github.com/NVIDIA/RULER) methodology. Qwen3.5-35B-A3B on M5 Max 128GB.
-
-**Single Needle Retrieval (with sparse V dequant):**
-
-| Test | q8_0 | turbo3 | turbo3 + sparse V |
-|------|------|--------|-------------------|
-| Single needle (9 positions) | 7/9 | 7/9 | **9/9 (100%)** |
-
-turbo3 + sparse V achieves 9/9 in this setup (vs 7/9 baseline), suggesting a potential denoising effect from removing low-weight quantization noise. Needle positions have meaningful attention weights (well above the 1e-6 threshold) and are never skipped.
-
-Sparse V shows no measurable impact on perplexity across all tested contexts and datasets. Observed improvements in retrieval tasks (e.g., NIAH) are treated as secondary signals and may reflect reduced quantization noise rather than fundamental model quality changes.
-
-**Single Needle — Depth (0-100%) x Context Length (pre-sparse-V):**
-
-| Depth | 4K | 8K | 16K | 32K |
-|-------|----|----|-----|-----|
-| q8_0 | 5/5 | 4/5 | 4/5 | 4/5 |
-| turbo3 | 5/5 | 4/5 | 5/5 | 3/5 |
-
-**Pre-sparse-V aggregate: q8_0 85% (17/20), turbo3 80% (16/20).** No systematic degradation from compression. N=10 needles remarkably stable (9-10/10 at every depth).
-
-**Multi-Key with 3 Distractors (RULER MK-NIAH):**
-
-| Cache Type | 4K | 8K | 16K | 32K |
-|------------|----|----|-----|-----|
-| q8_0 | 1/1 | 1/1 | 1/1 | 1/1 |
-| turbo3 | 1/1 | 1/1 | 1/1 | 1/1 |
-
-**100% retrieval accuracy with distractors through 32K.** turbo3 correctly ignores distractor needles at all context depths.
-
-### Long-Context Perplexity (Primary Quality Metric)
-
-50-chunk wikitext-103 at 32K context (strongest validation, CI ±0.021):
-
-| Config | PPL | vs q8_0 | Sparse V Δ |
-|--------|-----|---------|------------|
-| q8_0 (8-bit KV) | 7.0638 | — | — |
-| q4_0 (4-bit KV) | 7.0857 | +0.31% | — |
-| turbo3 WITHOUT sparse V (3.5-bit) | 7.1796 | +1.64% | — |
-| turbo3 WITH sparse V (3.5-bit) | 7.1796 | +1.64% | **0.0000** |
-
-Note: q4_0 is included as a reference baseline. No optimization was applied to q4_0 in this work. Development focused on q8_0 and turbo3 paths.
-
-### Key Validation
-
-Real Qwen3-1.7B KV tensor rotation Gaussianization:
-```
-Raw kurtosis:       900.4  → After rotation: 2.9  (Gaussian = 3.0)
-Std after rotation:  0.088388
-Expected (1/√d):     0.088388
-Ratio:               1.000 exactly
-```
-
----
+Everything else lives in **[docs/benchmarks.md](docs/benchmarks.md)**: asymmetric K/V and Boundary V tables, prefill context scaling, MoE and dense decode speed, NIAH retrieval, KL divergence, 70B/104B stress tests, community results on RTX 3090, M1 Max, and AMD RX 9070 XT, and the speed optimization journey.
 
 ## Getting Started
 
-### Prerequisites
-
-- **Python** >= 3.10
-- **NumPy** >= 1.24, **SciPy** >= 1.10
-- **cmake** + C/C++ compiler (for llama.cpp build)
-- **Xcode Command Line Tools** (macOS Metal build)
-- **Optional**: `torch`, `transformers`, `accelerate` (~4GB download, for real model validation)
-
-### Install the Python Prototype
+### Python Reference Implementation
 
 ```bash
 git clone https://github.com/TheTom/turboquant_plus.git
@@ -377,11 +65,7 @@ pip install -e ".[dev]"
 
 # Verify — should print "141 passed"
 python3 -m pytest tests/ -v
-```
 
-### Run the Demo
-
-```bash
 # Quick compression demo (no model needed)
 python3 benchmarks/demo.py
 
@@ -390,67 +74,19 @@ pip install transformers torch accelerate
 python3 benchmarks/validate_real_model.py
 ```
 
-### Build llama.cpp with TurboQuant
+Requires Python >= 3.10, NumPy >= 1.24, SciPy >= 1.10. `torch` / `transformers` / `accelerate` are optional (real-model validation only).
 
-The llama.cpp port adds two new KV cache types: `turbo3` (3.25 bits, 4.9× compression) and `turbo4` (4.25 bits, 3.8× compression).
+### Run Inference
 
-```bash
-# Clone the llama.cpp fork with TurboQuant support
-git clone https://github.com/TheTom/llama-cpp-turboquant.git
-cd llama-cpp-turboquant
-git checkout feature/turboquant-kv-cache
-
-# Build with Metal (Apple Silicon)
-cmake -B build -DGGML_METAL=ON -DGGML_METAL_EMBED_LIBRARY=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j
-
-# Build with CUDA (NVIDIA) — community tested on RTX 3080 Ti/3090/4090/5090
-# cmake -B build -DGGML_CUDA=ON -DCMAKE_BUILD_TYPE=Release
-# cmake --build build -j
-
-# Build with HIP (AMD) — tested on RX 9070 XT (RDNA 4, gfx1201)
-# See docs/windows-rdna4-setup.md for Windows gotchas
-# cmake -S . -B build -G Ninja -DGPU_TARGETS=gfx1201 -DGGML_HIP=ON \
-#   -DGGML_CUDA_FA_ALL_QUANTS=ON -DCMAKE_C_COMPILER=clang \
-#   -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release
-# cmake --build build --config Release
-
-# Verify turbo types are available
-./build/bin/llama-server --help | grep turbo
-# Expected output includes: turbo3, turbo4
-```
-
-The fork modifies these files from upstream llama.cpp:
-- `ggml/include/ggml.h` — new type enum entries
-- `ggml/src/ggml-common.h` — block structures
-- `ggml/src/ggml-quants.h` — function declarations
-- `ggml/src/ggml-turbo-quant.c` — C quantize/dequantize *(new file)*
-- `ggml/src/ggml.c` — type traits registration
-- `ggml/src/CMakeLists.txt` — build config
-- `ggml/src/ggml-metal/ggml-metal.metal` — Metal GPU kernels
-- `ggml/src/ggml-metal/ggml-metal-device.m` — Metal device validation
-- `common/arg.cpp` — CLI arg parsing
-
-### Run Inference with TurboQuant KV Cache
+The fastest path is a [prebuilt binary](https://github.com/TheTom/llama-cpp-turboquant/releases), or build from the fork — see the [llama-cpp-turboquant quick start](https://github.com/TheTom/llama-cpp-turboquant#quick-start) for build instructions, supported backends, and usage details.
 
 ```bash
-# Server mode (for Hermes Agent, Claude Code, OpenCode, etc.)
-./build/bin/llama-server \
-  -m models/your-model.gguf \
-  --alias "model-turbo" \
+# Server mode with TurboQuant KV cache
+./build/bin/llama-server -m models/your-model.gguf \
   --jinja -ngl 99 -c 262144 -fa on \
   --cache-type-k turbo3 --cache-type-v turbo3 \
-  -np 1 --metrics --host 0.0.0.0 --port 8080
-
-# CLI mode (quick test)
-./build/bin/llama-cli \
-  -m models/your-model.gguf \
-  -ngl 99 -c 2048 -fa on \
-  --cache-type-k turbo3 --cache-type-v turbo3 \
-  -n 100 -p "Hello world" --jinja
+  -np 1 --host 0.0.0.0 --port 8080
 ```
-
-### Cache Type Reference
 
 | Flag | Bits/val | Compression vs fp16 | Description |
 |------|----------|--------------------:|-------------|
@@ -459,7 +95,7 @@ The fork modifies these files from upstream llama.cpp:
 | `q8_0` | 8 | 2.0x | llama.cpp default quantized cache. |
 | `q4_0` | 4 | 4.0x | llama.cpp 4-bit cache. |
 
----
+For per-model configuration guidance (symmetric vs asymmetric, Boundary V, large-model memory caps), see the [Getting Started Guide](docs/getting-started.md) and [Configuration Recommendations](docs/turboquant-recommendations.md).
 
 ## Architecture
 
@@ -482,20 +118,19 @@ Input: KV cache vector x ∈ R^d (one attention head)
 >
 > The original TurboQuant paper (Zandieh et al. 2024, [arXiv 2406.03482](https://arxiv.org/abs/2406.03482)) includes a 1-bit QJL error-correction stage. The Python `qjl.py` here implements it for paper reproducibility.
 >
-> **Production drops QJL on both K and V.** [TheTom/llama-cpp-turboquant](https://github.com/TheTom/llama-cpp-turboquant) recommended config is `--cache-type-k q8_0 --cache-type-v turbo3`. No QJL on either side.
+> **Production drops QJL on both K and V.** QJL eliminates reconstruction bias but amplifies variance, which softmax turns into attention noise. Five independent groups confirmed (buun, scos-lab, Arclabs001, +2). See [turbo4-resurrection.md](docs/papers/turbo4-resurrection.md) for the full ablation and mechanism.
 >
-> QJL eliminates reconstruction bias but amplifies variance, which softmax turns into attention noise. Five independent groups confirmed (buun, scos-lab, Arclabs001, +2). See [turbo4-resurrection.md](docs/papers/turbo4-resurrection.md) for the full ablation and mechanism.
->
-> If you're building on this repo: use `TurboQuantMSE` (V cache), or implement straight 4 to 8 bit PolarQuant on K. Only enable the `QJL` / `TurboQuant` (with QJL) classes if you are reproducing the original paper or doing K-side research below 8-bit. Even then, validate at your target context length. Historical evidence is that QJL noise accumulates past ~16K context.
+> If you're building on this repo: use `TurboQuantMSE` (V cache), or implement straight 4 to 8 bit PolarQuant on K. Only enable the `QJL` / `TurboQuant` (with QJL) classes if you are reproducing the original paper or doing K-side research below 8-bit.
 
-## Project Structure
+<details>
+<summary><b>Project Structure</b></summary>
 
 ```
 turboquant/
 ├── rotation.py        # Walsh-Hadamard Transform + random sign flips
 ├── codebook.py        # Lloyd-Max optimal centroid computation
 ├── polar_quant.py     # PolarQuant — norm extraction + WHT rotation + scalar quantization
-├── qjl.py            # QJL 1-bit quantizer (paper-faithful reference, see README §QJL). Not used by TheTom/llama-cpp-turboquant in production.
+├── qjl.py            # QJL 1-bit quantizer (paper-faithful reference, see README §QJL). Not used in production.
 ├── turboquant.py      # Full TurboQuant pipeline
 ├── kv_cache.py        # KV cache integration layer
 ├── outlier.py         # Outlier channel strategy (2.5-bit, 3.5-bit)
@@ -518,15 +153,16 @@ benchmarks/
 └── validate_real_model.py        # Real model KV tensor validation
 
 docs/
+├── benchmarks.md                 # Full benchmark and validation data
+├── mlx-port.md                   # MLX framework port (Python)
+├── changelog.md                  # v1 milestone history
 ├── turboquant-recommendations.md # Configuration guide (tested matrix)
 ├── windows-rdna4-setup.md        # Windows + AMD RDNA 4 build guide
-├── papers/
-│   ├── turbo4-resurrection.md    # turbo4 bug hunt (PPL 679 → 6.125)
-│   ├── sparse-v-dequant.md       # Sparse V attention-gated optimization
-│   ├── layer-aware-v-compression.md  # Boundary V (layer-adaptive V precision)
-│   └── block-size-experiment.md  # Block size 32→128 (12% compression win)
+├── papers/                       # Validation papers and experiment writeups
 └── (25+ engineering docs, investigations, experiment logs)
 ```
+
+</details>
 
 ## Roadmap
 
@@ -543,9 +179,11 @@ docs/
 | Boundary V | ✅ | Layer-aware V compression, 37-91% quality recovery |
 | Sparse V | ✅ | Attention-gated dequant skip, +22.8% decode on MoE. [Upstream PR #21119](https://github.com/ggml-org/llama.cpp/pull/21119) |
 | Block size optimization | ✅ | 32→128, 12% better compression, zero quality cost |
-| Upstream coordination | 🔄 | llama.cpp PR preparation ([#27](https://github.com/TheTom/turboquant_plus/issues/27)) |
+| vLLM upstream | ✅ | Merged as the TurboQuant attention backend ([PR #38479](https://github.com/vllm-project/vllm/pull/38479)) |
+| llama.cpp upstream (rotation) | ✅ | Hadamard KV rotation + FWHT kernels merged upstream ([#21038](https://github.com/ggml-org/llama.cpp/pull/21038), [#22631](https://github.com/ggml-org/llama.cpp/pull/22631)) |
+| Upstream coordination | 🔄 | llama.cpp PR preparation for the full codec ([#27](https://github.com/TheTom/turboquant_plus/issues/27)) |
 | TurboQuant+ extensions | ⏳ | Adaptive bits, temporal decay, MoE-aware compression |
-| MLX Swift port | 🔄 | Active collaboration with @ekryski on [mlx-swift-lm](https://github.com/ekryski/mlx-swift-lm/tree/alpha) — turbo4v2 working, Gemma4 fixes in progress |
+| MLX Swift port | 🔄 | Active collaboration with @ekryski on [mlx-swift-lm](https://github.com/ekryski/mlx-swift-lm/tree/alpha) — turbo4v2 working |
 
 ## Paper Reference
 
@@ -554,207 +192,17 @@ docs/
 - **QJL**: [arXiv 2406.03482](https://arxiv.org/abs/2406.03482)
 - **Google Research Blog**: [TurboQuant: Redefining AI Efficiency](https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/)
 
-## Engineering Docs
+## Docs
 
-Detailed debugging logs, gotchas, and benchmarks from the llama.cpp port:
-
-- [Quality Benchmarks](docs/quality-benchmarks.md) — perplexity validation, bisection log, top-of-tree quality+speed table
+- [Benchmarks](docs/benchmarks.md) — full quality/speed/retrieval data, community hardware results
+- [MLX Port](docs/mlx-port.md) — the experimental MLX Python port: results, quickstarts, MM-NIAH
+- [Changelog](docs/changelog.md) — v1 milestone history
+- [Quality Benchmarks](docs/quality-benchmarks.md) — perplexity validation, bisection log
 - [Speed Investigation](docs/turbo-speed-investigation.md) — Metal gotchas, fp16 WHT results, optimization history
-- [Speed Experiments](docs/speed-experiments.md) — the full 739 → 2747 tok/s optimization journey (5 experiments)
-- [Context Scaling Deep Dive](docs/context-scaling-deep-dive.md) — why turbo3 degraded at long context, how we fixed it (every failed approach documented)
-- [Pre-Rotate-Queries Investigation](docs/pre-rotate-queries-investigation.md) — why graph-side WHT failed initially, how we fixed it
-- [Quality + Speed Gate](scripts/turbo-quality-gate.sh) — pre-push script checking PPL AND context scaling ratio (required before merge)
-
-## MLX Framework Port (Experimental)
-
-TurboQuant KV cache compression is being ported to Apple's [MLX framework](https://github.com/ml-explore/mlx) for native Python/Swift inference on Apple Silicon.
-
-**Fork:** [TheTom/mlx `feature/turboquant-plus`](https://github.com/TheTom/mlx/tree/feature/turboquant-plus)
-
-### Results (M5 Max)
-
-**Qwen2.5-3B 4bit — delegated KVCache (5-run avg, 500 decode tokens, [`7ad7500`](https://github.com/TheTom/mlx/commit/7ad75002bbf87f5d1774859e94e2a76ccbd3a56d)):**
-
-| Config | Decode tok/s | vs Baseline | PPL | PPL Delta |
-|--------|-------------|-------------|-----|-----------|
-| Baseline (f16 KV) | 172.6 | 100% | 1.8764 | — |
-| **Sym turbo4** | **171.2** | **99.2%** | 1.9083 | +1.70% |
-| **Asym (K=FP16, V=turbo4)** | **171.0** | **99.0%** | 1.8859 | +0.51% |
-
-**Quality:** Output text indistinguishable from baseline. KL divergence < 0.001, cosine similarity > 0.989.
-
-**35B MoE (Qwen3.5-35B-A3B 8bit):**
-
-| Config | Prefill | Decode | vs Baseline |
-|--------|---------|--------|-------------|
-| Baseline | 11.4 | 95.7 | 100% |
-| turbo4 fused + boundary | 132.7 | **94.2** | **96%** |
-
-
-**Qwen3.5-27B Dense 8bit (16/64 KV layers):**
-
-| Config | PPL | PPL Delta | Decode | vs Baseline |
-|--------|-----|-----------|--------|-------------|
-| Baseline | 1.4800 | — | 17.9 | 100% |
-| turbo4 asymmetric | 1.5082 | +1.91% | 15.5 | 87% |
-| turbo4 symmetric | 1.5219 | +2.83% | 15.4 | 86% |
-
-**Quality Validation (Qwen2.5-7B 8bit, dense, all 28 layers KV):**
-
-| Test | Symmetric turbo4 | Asymmetric (K=FP16) |
-|------|-----------------|---------------------|
-| **KLD** | 6.86 (broken) | **0.003** |
-| **Top-1 match** | 10.5% (broken) | **98.1%** |
-| **NIAH** | 0/15 FAIL | **15/15 PASS** |
-
-> [!warning] **Symmetric turbo is catastrophic on dense models.** All K layers compressed → softmax error compounds across 28 layers. Asymmetric (K=FP16, V=turbo4) is mandatory for dense architectures. Hybrid models (Qwen3.5) with delta net layers are accidentally safe because only a fraction of layers use KV cache.
-
-**Dense models (short context, deferred compression):**
-
-| Model | Baseline Decode | turbo4 asym Decode | PPL Delta |
-|-------|----------------|-------------------|-----------|
-| Qwen2.5-7B 8bit | 64.2 | 64.1 | 0.00% |
-| phi-4 8bit | 32.9 | 32.7 | 0.00% |
-
-**M2 Pro — Qwen2.5-1.5B 8bit (dense, 28/28 KV layers, asymmetric):**
-
-| Test | Result |
-|------|--------|
-| KLD | 0.004 |
-| Top-1 match | 96.8% |
-| NIAH | 30/30 PASS |
-
-| Context | Baseline Decode | Turbo Asymmetric | vs Baseline |
-|---------|----------------|-----------------|-------------|
-| 128 | 34.8 | 35.2 | 101% |
-| 4096 | 46.9 | 21.6 | 46% |
-
-M2 Pro shows more decode regression at long context — lower memory bandwidth amplifies turbo overhead.
-
-**M5 Max Context Scaling (Qwen2.5-7B 8bit, delegated KVCache, [`7ad7500`](https://github.com/TheTom/mlx/commit/7ad75002bbf87f5d1774859e94e2a76ccbd3a56d)):**
-
-| Context | Baseline | Sym turbo4 | vs Baseline | Asym (K=FP16) | vs Baseline |
-|---------|----------|-----------|-------------|---------------|-------------|
-| 512 | 63.6 | 63.6 | **100%** | 64.0 | **101%** |
-| 1K | 63.1 | 62.8 | **100%** | 62.6 | **99%** |
-| 2K | 62.7 | 61.8 | **98%** | 62.2 | **99%** |
-| 4K | 61.0 | 60.2 | **99%** | 61.0 | **100%** |
-| 8K | 58.2 | 56.9 | **98%** | 57.7 | **99%** |
-| 16K | 54.6 | 53.0 | **97%** | 53.8 | **99%** |
-
-> Previous numbers (61-83%) were measured before the delegated KVCache optimization (`7ad7500`). Root cause was `mx.concatenate` allocating new arrays every decode step × n_layers. Fixed by delegating FP16 storage to an internal KVCache with pre-allocated buffers.
-
-**MLX Python vs llama.cpp (Qwen2.5-7B, M5 Max):**
-
-| Framework | Prefill (400 tok) | Decode | Memory |
-|-----------|------------------|--------|--------|
-| llama.cpp (Q8_0) | 387 | 20.9 | 7.5 GB |
-| MLX (8bit) | 243 | **21.2** | 8.5 GB |
-
-MLX decode matches llama.cpp. Prefill 37% slower (lazy graph vs pre-compiled).
-
-**MLX Python vs llama.cpp (M2 Pro, Qwen2.5-7B):**
-
-| Framework | Prefill (400 tok) | Decode |
-|-----------|------------------|--------|
-| llama.cpp | 387 | 20.9 |
-| MLX | 243 | 21.3 |
-
-> **Note:** Future benchmark logs should record Apple Silicon power mode (Low / Auto / High) when known, as it can materially affect throughput.
-
-### Quick Start (MLX Python)
-
-```python
-import mlx_lm
-from mlx.nn.layers.turbo_kv_cache import TurboKVCache
-
-model, tokenizer = mlx_lm.load("mlx-community/Qwen2.5-7B-Instruct-8bit")
-n_layers = len(model.model.layers)
-cache = [TurboKVCache(bits=4, key_bits=4) for _ in range(n_layers)]
-text = mlx_lm.generate(model, tokenizer, prompt="Hello!",
-                        max_tokens=200, prompt_cache=cache, verbose=True)
-```
-
-```bash
-pip install git+https://github.com/TheTom/mlx.git@feature/turboquant-plus
-pip install mlx-lm
-```
-
-### How it works
-
-`TurboKVCache` is a drop-in replacement for mlx-lm's `KVCache` that adds TurboQuant 4-bit K+V compression. Compatible with **mlx-lm** and **mlx-vlm** — no framework changes needed.
-
-**Delegated KVCache architecture** ([`7ad7500`](https://github.com/TheTom/mlx/commit/7ad75002bbf87f5d1774859e94e2a76ccbd3a56d)): During prefill, stores raw FP16. On first decode step, compresses to packed TurboQuant storage and seeds an internal `KVCache` with decoded FP16. Subsequent decode tokens go through the native KVCache (pre-allocated buffers, zero-alloc slice-assign). Packed storage updated in background via periodic batch recompression on CPU stream.
-
-- **97–100% baseline decode speed** across 512–16K context (Qwen2.5-7B, M5 Max)
-- +0.51% PPL (asymmetric), +1.70% PPL (symmetric)
-- 99% answer agreement with baseline (520 multimodal samples)
-- Works with stock mlx-lm and mlx-vlm, no fork needed
-- All TurboQuant+ papers applied (beta centroids, dual SRHT signs, boundary layers)
-
-### Quick Start — mlx-vlm (multimodal)
-
-```python
-from mlx_vlm import load
-from mlx_vlm.models.cache import make_prompt_cache
-from mlx_lm.models.cache import KVCache
-from mlx.nn.layers.turbo_kv_cache import TurboKVCacheLite, compact_turbo_cache
-
-model, processor = load("mlx-community/gemma-4-26b-a4b-it-bf16")
-
-# Wrap KV layers with TurboKVCacheLite
-cache = make_prompt_cache(model.language_model)
-kv_indices = [i for i, c in enumerate(cache) if isinstance(c, KVCache)]
-for idx in kv_indices:
-    cache[idx] = TurboKVCacheLite(cache[idx], bits=4, key_bits=4)
-
-# Generate as normal — prefill stores FP16
-from mlx_vlm import generate
-generate(model, processor, prompt="...", max_tokens=1, prompt_cache=cache)
-
-# Compact: compress K+V to 4-bit TurboQuant
-compact_turbo_cache(cache)
-
-# Continue generating — native SDPA at full speed
-generate(model, processor, prompt="Continue.", max_tokens=200, prompt_cache=cache)
-```
-
-```bash
-pip install git+https://github.com/TheTom/mlx.git@feature/turboquant-plus
-pip install mlx-vlm
-```
-
-### Quick Start — mlx-lm (text)
-
-```python
-import mlx_lm
-from mlx.nn.layers.turbo_kv_cache import make_turbo_cache, compact_turbo_cache
-
-model, tokenizer = mlx_lm.load("mlx-community/Qwen2.5-7B-Instruct-8bit")
-cache = make_turbo_cache(model, bits=4)
-mlx_lm.generate(model, tokenizer, prompt="Hello!", max_tokens=1, prompt_cache=cache)
-compact_turbo_cache(cache)
-mlx_lm.generate(model, tokenizer, prompt="Continue.", max_tokens=200,
-                 prompt_cache=cache, verbose=True)
-```
-
-### MM-NIAH Multimodal Benchmark (520 samples)
-
-gemma-4-26b-a4b-it · BF16 · 4-bit TQ+ Compact · MM-NIAH (val) · M5 Max 128GB
-
-| Bucket | BL Acc | TQ+ Acc | Agree | BL Decode | TQ+ Decode | Speedup | BL KV | TQ+ KV | KV saved |
-|--------|--------|---------|-------|-----------|-----------|---------|-------|--------|----------|
-| ~1K | 85% | 84% | 99% | 55.1 | 54.7 | 0.99x | 0.21G | 0.19G | 10% |
-| ~3K | 81% | 79% | 99% | 55.2 | 54.1 | 0.98x | 0.27G | 0.21G | 22% |
-| ~7K | 80% | 81% | 99% | 54.1 | 51.7 | 0.96x | 0.37G | 0.24G | 35% |
-| ~15K | 76% | 76% | 100% | 52.0 | 47.8 | 0.92x | 0.53G | 0.28G | 47% |
-| ~30K | 77% | 75% | 98% | 46.9 | 40.2 | 0.86x | 0.87G | 0.36G | 59% |
-| ~60K | 75% | 76% | 99% | 42.6 | 33.7 | 0.79x | 1.30G | 0.47G | 64% |
-| **Total** | **79%** | **78%** | **99%** | **51.1** | **47.2** | **0.92x** | **0.58G** | **0.29G** | **50%** |
-
-99% answer agreement with baseline across all context lengths — zero systematic quality degradation. KV savings of 10–64% where TQ+ is active. Decode speedup scales from 0.99x at ~1K to 0.79x at ~60K (dequant-once overhead on longer prefills).
-
----
+- [Speed Experiments](docs/speed-experiments.md) — the full 739 → 2747 tok/s optimization journey
+- [Context Scaling Deep Dive](docs/context-scaling-deep-dive.md) — why turbo3 degraded at long context, how we fixed it
+- [Pre-Rotate-Queries Investigation](docs/pre-rotate-queries-investigation.md) — why graph-side WHT failed initially
+- [Quality + Speed Gate](scripts/turbo-quality-gate.sh) — pre-push script checking PPL AND context scaling ratio
 
 ## Contributing
 
