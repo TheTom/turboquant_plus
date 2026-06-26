@@ -31,4 +31,17 @@ Consistent with the K-dominates-KLD finding: **q8_0-K + turbo4-V (~6.3 bpw) cuts
 
 ## Cross-backend
 
-The changes compile cleanly under HIP/ROCm on an RX 9070 XT (gfx1201, ROCm 7.1), including the new turbo-MMA instances; the MMA decode path is gated to CUDA tensor cores and falls back to VEC on AMD. (turbo3/turbo2 are regression-free; their decode-at-depth still uses VEC — extending the MMA gate to them is straightforward follow-up.)
+The changes compile cleanly under HIP/ROCm on an RX 9070 XT (gfx1201, ROCm 7.1), including the new turbo-MMA instances; the MMA decode path is gated to CUDA tensor cores and falls back to VEC on AMD.
+
+## turbo3 / turbo2 also on the fused MMA path
+
+The same GQA-packed MMA decode was extended from turbo4-only to turbo3 and turbo2 (per-type tile loaders: the 3-bit split index = 2 low bits in `qs` + 1 high bit in `signs`, and the plain 2-bit unpack). It is bit-exact to the VEC path (Mean KLD @2048 chunks=8: turbo3 `0.020278 == 0.020278`, turbo2 `0.041490 == 0.041490`), and removes the at-depth decode collapse those configs had on VEC. Decode tg32 (RTX 5090, qwen3.6-35B-A3B), now flat and ahead of the reference fork at every depth:
+
+| depth | turbo3 (ours / ref) | turbo2 (ours / ref) |
+|------:|:-------------------:|:-------------------:|
+| 2048  | **224** / 193 | **228** / 213 |
+| 8192  | **225** / 193 | **224** / 210 |
+| 16384 | **217** / 183 | **217** / 204 |
+| 32768 | **203** / 178 | **203** / 200 |
+
+(Pre-MMA VEC decayed to 124 / 183 at 32K respectively — losing to the ref fork there. turbo3 also gets the corrected Lloyd-Max centroids: Mean KLD @2048 −4.3%.)
