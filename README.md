@@ -40,7 +40,7 @@ Additional experiments and writeups: [Sparse V dequant](docs/papers/sparse-v-deq
 |------------|----------|-------------|----------------------|---------|
 | f16 | 16.0 | 1.0x | 6.121 | -0.16% |
 | q8_0 | 8.5 | 1.9x | 6.111 | baseline |
-| **turbo4** | **4.25** | **3.8x** | **6.125** | **+0.23%** |
+| **turbo4** | **4.125** | **3.9x** | **6.125** | **+0.23%** |
 | q4_0 | 4.5 | 3.6x | 6.142 | +0.52% |
 | turbo3 | 3.5† | 4.6x† | 6.176 | +1.06% |
 | turbo2 | 2.5 | 6.4x | 6.507 | +6.48% |
@@ -91,7 +91,7 @@ The fastest path is a [prebuilt binary](https://github.com/TheTom/llama-cpp-turb
 | Flag | Bits/val | Compression vs fp16 | Description |
 |------|----------|--------------------:|-------------|
 | `turbo3` | 3.5† | **4.6x**† | 3-bit PolarQuant + WHT rotation. Best compression, q8_0 speed. |
-| `turbo4` | 4.25 | **3.8x** | 4-bit PolarQuant (16 centroids). Best quality. |
+| `turbo4` | 4.125 | **3.9x** | 4-bit PolarQuant (16 centroids). Best quality. |
 | `q8_0` | 8 | 2.0x | llama.cpp default quantized cache. |
 | `q4_0` | 4 | 4.0x | llama.cpp 4-bit cache. |
 
@@ -111,7 +111,7 @@ Input: KV cache vector x ∈ R^d (one attention head)
     │   turbo4: 16 centroids (4-bit), turbo3: 8 centroids (3-bit), turbo2: 4 centroids (2-bit)
     │
     └── Output: quantized indices + norm per block
-        Compression: 3.8x (turbo4), 5.1x (turbo3), 7.5x (turbo2)
+        Compression: 3.9x (turbo4), 5.1x (turbo3), 7.5x (turbo2)
 ```
 
 > **Note on QJL: reference only, not used in production.**
@@ -195,6 +195,7 @@ docs/
 ## Docs
 
 - [Benchmarks](docs/benchmarks.md) — full quality/speed/retrieval data, community hardware results
+- [turbo4 Rematch (Jun 2026)](docs/turbo4-rematch-2026-06.md) — centroid-port-bug fix, 4.125 bpw, PDL + fused-MMA decode, asymmetric KLD; head-to-head vs `spiritbuun`
 - [MLX Port](docs/mlx-port.md) — the experimental MLX Python port: results, quickstarts, MM-NIAH
 - [Changelog](docs/changelog.md) — v1 milestone history
 - [Quality Benchmarks](docs/quality-benchmarks.md) — perplexity validation, bisection log
