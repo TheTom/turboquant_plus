@@ -15,7 +15,7 @@ This repository is the **research home**: the Python reference implementation, t
 | [vLLM](https://github.com/vllm-project/vllm) | CUDA / ROCm, datacenter | **Upstream, merged** | `--kv-cache-dtype turboquant_k8v4` and friends ([PR #38479](https://github.com/vllm-project/vllm/pull/38479)) |
 | [llama.cpp](https://github.com/ggml-org/llama.cpp) | All backends | **Upstream, rotation merged** | Hadamard KV cache rotation ([#21038](https://github.com/ggml-org/llama.cpp/pull/21038)) + fast WHT kernels (CPU [#22631](https://github.com/ggml-org/llama.cpp/pull/22631), CUDA [#23615](https://github.com/ggml-org/llama.cpp/pull/23615), Vulkan [#23687](https://github.com/ggml-org/llama.cpp/pull/23687)). Rotation + q4_0 cache approximates turbo4; full PolarQuant codec is in the fork below |
 | [llama-cpp-turboquant](https://github.com/TheTom/llama-cpp-turboquant) | Metal, CUDA, HIP, CPU | **Production fork** | turbo2/3/4 KV cache + TQ3_1S/TQ4_1S weight formats; [prebuilt binaries](https://github.com/TheTom/llama-cpp-turboquant/releases) for Mac (Metal) and Windows (CUDA) |
-| [mlx-swift-lm](https://github.com/ekryski/mlx-swift-lm/tree/alpha) | Apple Silicon, Swift | Active collaboration | Fastest Apple path: ~2.5x faster decode than Python mlx-lm, full TQ+ support including turbo4v2. 144 tok/s on Qwen3.5-35B-A3B MoE at 4K on M5 Max |
+| [mlx-swift-lm](https://github.com/ml-explore/mlx-swift-lm) | Apple Silicon, Swift | **Upstream, merged** | Merged into Apple MLX ([PR #232](https://github.com/ml-explore/mlx-swift-lm/pull/232)): full asymmetric family (turbo0v*/turbo8v*) + symmetric turbo4/3/2 with per-dimension key calibration, behind `kvScheme`. turbo8v3: 2.7x KV at affine8-class KLD across 6 families (1.7B to 32B, incl. 30B MoE); decode 0.7-0.8x fp16 |
 | [vllm-swift](https://github.com/TheTom/vllm-swift) | Apple Silicon, Swift | Active | OpenAI-compatible serving built on mlx-swift-lm; no Python in the inference hot path |
 | [Atlas](https://github.com/Avarok-Cybersecurity/atlas) | Rust, Metal | Integrated | turbo4 KV cache append/decode kernels |
 | [mlxcel](https://github.com/lablup/mlxcel) | Rust, MLX | Community port | [Turbo KV cache docs](https://github.com/lablup/mlxcel/blob/main/docs/turbo-kv-cache.md). Thanks to [@inureyes](https://github.com/inureyes) and the Lablup team for the careful port and upstream attribution |
@@ -183,7 +183,7 @@ docs/
 | llama.cpp upstream (rotation) | ✅ | Hadamard KV rotation + FWHT kernels merged upstream ([#21038](https://github.com/ggml-org/llama.cpp/pull/21038), [#22631](https://github.com/ggml-org/llama.cpp/pull/22631)) |
 | Upstream coordination | 🔄 | llama.cpp PR preparation for the full codec ([#27](https://github.com/TheTom/turboquant_plus/issues/27)) |
 | TurboQuant+ extensions | ⏳ | Adaptive bits, temporal decay, MoE-aware compression |
-| MLX Swift port | 🔄 | Active collaboration with @ekryski on [mlx-swift-lm](https://github.com/ekryski/mlx-swift-lm/tree/alpha) — turbo4v2 working |
+| MLX Swift upstream | ✅ | Merged into Apple [mlx-swift-lm](https://github.com/ml-explore/mlx-swift-lm) ([PR #232](https://github.com/ml-explore/mlx-swift-lm/pull/232), 2026-07-20): JIT Metal kernels, asymmetric + calibrated symmetric schemes, 63 tests |
 
 ## Paper Reference
 
