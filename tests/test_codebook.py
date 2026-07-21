@@ -30,6 +30,42 @@ class TestOptimalCentroids:
             assert len(centroids) == 4
             np.testing.assert_allclose(centroids, expected, rtol=1e-10)
 
+    def test_3bit_centroids_pinned(self):
+        """3-bit optimal centroids for d=128 (the canonical KV block size).
+
+        Reference values every backend port (CUDA/HIP/Metal/CPU) must reproduce.
+        A mismatch here — or a port hardcoding different values — means a
+        mis-scaled codebook that clips the post-rotation Gaussian tails and
+        inflates KLD/PPL. Pinned to guard against transcription drift.
+        """
+        from turboquant.codebook import optimal_centroids
+
+        c = optimal_centroids(3, 128)
+        expected = np.array([
+            -0.19021, -0.11879, -0.06682, -0.02166,
+             0.02166,  0.06682,  0.11879,  0.19021,
+        ])
+        np.testing.assert_allclose(c, expected, atol=5e-4)
+
+    def test_4bit_centroids_pinned(self):
+        """4-bit optimal centroids for d=128.
+
+        Outer level ≈ 0.2402 (2.72·σ, σ=1/√128). A downstream C/CUDA port once
+        shipped ≈0.1739 (σ≈0.064, 0.61× too narrow) → ~2.1× excess MSE and a
+        large KLD regression. This test pins the correct envelope so any port
+        can be checked against it.
+        """
+        from turboquant.codebook import optimal_centroids
+
+        c = optimal_centroids(4, 128)
+        expected = np.array([
+            -0.24021, -0.18139, -0.14149, -0.10960,
+            -0.08205, -0.05709, -0.03369, -0.01114,
+             0.01114,  0.03369,  0.05709,  0.08205,
+             0.10960,  0.14149,  0.18139,  0.24021,
+        ])
+        np.testing.assert_allclose(c, expected, atol=5e-4)
+
     def test_centroids_sorted(self):
         """Centroids should always be sorted ascending."""
         from turboquant.codebook import optimal_centroids
