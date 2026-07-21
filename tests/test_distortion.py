@@ -157,7 +157,22 @@ class TestDistortionScaling:
         )
 
     def test_turboquant_improves_over_polarquant(self):
-        """TurboQuant at b bits should have better IP than PolarQuant at b bits."""
+        """Regression guard: PolarQuant 2-bit (MSE-only) should beat TurboQuant 2-bit (QJL).
+
+        The *current* finding (despite the historical test name) is that the 1-bit QJL
+        residual stage is counterproductive for raw inner-product distortion at a fixed bit
+        budget. With the current QJL implementation (random orthogonal projection + √d
+        scaling, see turboquant/qjl.py), QJL adds directional noise rather than improving the
+        IP estimate, so at a 2-bit total budget PolarQuant-only (MSE) beats PolarQuant-1bit +
+        QJL-1bit. This mirrors the documented softmax-attention regression on large-K-norm
+        models (e.g. Qwen2.5-7B) in docs/papers/turbo4-resurrection.md (issue #45); the
+        production path (TurboQuantMSE) omits QJL entirely.
+
+        The guard asserts PolarQuant-2bit avg IP error ≤ TurboQuant-2bit avg IP error against
+        the current QJL. If a future QJL revision flips this, the assertion fails on purpose,
+        prompting a re-evaluation of whether QJL should return to the production path.
+        (PolarQuant-1bit error is printed for context only and is not asserted on.)
+        """
         d = 256
         rng = np.random.default_rng(111)
 
@@ -167,7 +182,7 @@ class TestDistortionScaling:
             x, y = pairs[i]
             pairs[i] = (x / np.linalg.norm(x), y / np.linalg.norm(y))
 
-        # PolarQuant 2-bit (MSE-only)
+        # PolarQuant 2-bit (MSE-only, same total bit-width as TurboQuant below)
         pq = PolarQuant(d=d, bit_width=2, seed=42)
         pq_errors = []
         for x, y in pairs:
@@ -177,6 +192,16 @@ class TestDistortionScaling:
             y_hat = pq.dequantize(idx_y, n_y)
             pq_errors.append(abs(np.dot(x, y) - np.dot(x_hat, y_hat)))
 
+        # PolarQuant 1-bit (same number of PolarQuant bits as TurboQuant's first stage)
+        pq_1bit = PolarQuant(d=d, bit_width=1, seed=42)
+        pq_1bit_errors = []
+        for x, y in pairs:
+            idx_x, n_x = pq_1bit.quantize(x)
+            idx_y, n_y = pq_1bit.quantize(y)
+            x_hat = pq_1bit.dequantize(idx_x, n_x)
+            y_hat = pq_1bit.dequantize(idx_y, n_y)
+            pq_1bit_errors.append(abs(np.dot(x, y) - np.dot(x_hat, y_hat)))
+
         # TurboQuant 2-bit (PolarQuant 1-bit + QJL 1-bit)
         tq = TurboQuant(d=d, bit_width=2, seed=42)
         tq_errors = []
@@ -185,10 +210,25 @@ class TestDistortionScaling:
             y_hat = tq.dequantize(tq.quantize(y))
             tq_errors.append(abs(np.dot(x, y) - np.dot(x_hat, y_hat)))
 
-        # TurboQuant should have lower IP distortion (that's the whole point of QJL)
-        # Not asserting strictly — just that TurboQuant is competitive
         tq_avg = np.mean(tq_errors)
         pq_avg = np.mean(pq_errors)
-        # Log for review
-        print(f"PolarQuant 2-bit avg IP error: {pq_avg:.6f}")
-        print(f"TurboQuant 2-bit avg IP error: {tq_avg:.6f}")
+        pq_1bit_avg = np.mean(pq_1bit_errors)
+
+        # Known finding (see docs/papers/turbo4-resurrection.md, issue #45):
+        # QJL is actively harmful for attention quality. This test documents the
+        # regression: TurboQuant 2-bit (PolarQuant 1-bit + QJL 1-bit) should be
+        # BETTER than PolarQuant at the same total bit budget (2-bit), but in
+        # practice QJL inflates distortion. The production path (TurboQuantMSE)
+        # omits QJL entirely and uses MSE-only PolarQuant.
+        #
+        # Assert that PolarQuant 2-bit (MSE-only) beats TurboQuant 2-bit (QJL):
+        # this is the regression we want to detect if QJL is ever "fixed".
+        assert pq_avg <= tq_avg, (
+            f"Unexpected: TurboQuant 2-bit ({tq_avg:.6f}) now beats PolarQuant 2-bit "
+            f"({pq_avg:.6f}) — QJL may have been fixed. Re-evaluate whether QJL "
+            f"should be re-enabled in the production path."
+        )
+
+        print(f"PolarQuant 1-bit avg IP error: {pq_1bit_avg:.6f}")
+        print(f"PolarQuant 2-bit avg IP error: {pq_avg:.6f}  ← production path")
+        print(f"TurboQuant 2-bit avg IP error: {tq_avg:.6f}  ← QJL adds noise")

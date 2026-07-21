@@ -33,11 +33,11 @@ from turboquant.qjl import QJL
 @dataclass
 class CompressedVector:
     """Container for a TurboQuant-compressed vector."""
-    mse_indices: np.ndarray   # (d,) or (batch, d) — PolarQuant indices, (b-1)-bit integers
-    vector_norms: np.ndarray  # scalar or (batch,) — original ||x||_2 for rescaling
-    qjl_signs: np.ndarray     # (d,) or (batch, d) — QJL sign bits, int8 {+1, -1}
-    residual_norms: np.ndarray # scalar or (batch,) — ||residual||_2
-    bit_width: int             # total bits per coordinate
+    mse_indices: np.ndarray    # (d,) or (batch, d) — PolarQuant indices, (b-1)-bit integers
+    vector_norms: np.ndarray   # scalar or (batch,) — original ||x||_2 for rescaling
+    qjl_signs: np.ndarray      # (d,) or (batch, d) — QJL sign bits, int8 {+1, -1}
+    residual_norms: np.ndarray  # scalar or (batch,) — ||residual||_2
+    bit_width: int              # total bits per coordinate
 
 
 class TurboQuant:
@@ -68,13 +68,19 @@ class TurboQuant:
         self.d = d
         self.bit_width = bit_width
 
+        # Spawn independent child seeds from a SeedSequence so PolarQuant and QJL
+        # use statistically independent random streams without magic offset arithmetic.
+        # Accept either an int or an already-created SeedSequence (e.g. from a parent spawner).
+        ss = seed if isinstance(seed, np.random.SeedSequence) else np.random.SeedSequence(seed)
+        pq_child, qjl_child = ss.spawn(2)
+
         # Stage 1: PolarQuant at (b-1) bits
         self.polar_quant = PolarQuant(
-            d, bit_width=bit_width - 1, seed=seed, norm_correction=norm_correction,
+            d, bit_width=bit_width - 1, seed=pq_child, norm_correction=norm_correction,
         )
 
-        # Stage 2: QJL for residual (uses different seed)
-        self.qjl = QJL(d, seed=seed + 1000)
+        # Stage 2: QJL for residual (independent seed stream)
+        self.qjl = QJL(d, seed=qjl_child)
 
     def quantize(self, x: np.ndarray) -> CompressedVector:
         """Quantize a vector or batch.
@@ -129,10 +135,11 @@ class TurboQuant:
         Includes:
         - PolarQuant indices: (b-1) bits per coordinate per vector
         - QJL signs: 1 bit per coordinate per vector
-        - Residual norms: 32 bits (float32) per vector
+        - Vector norms (||x||_2): 32 bits (float32) per vector
+        - Residual norms (||residual||_2): 32 bits (float32) per vector
         """
         per_vector = self.d * self.bit_width  # (b-1) + 1 bits per coordinate
-        norms = 32  # float32 per vector
+        norms = 64  # two float32 norms per vector (vector_norm + residual_norm)
         return n_vectors * (per_vector + norms)
 
     def compression_ratio(self, original_bits_per_value: int = 16) -> float:
@@ -145,7 +152,8 @@ class TurboQuant:
             Compression ratio (e.g., 4.0 means 4× smaller).
         """
         original_per_vector = self.d * original_bits_per_value
-        compressed_per_vector = self.d * self.bit_width + 32  # +32 for norm
+        # +64 = two float32 norms (||x||_2 and ||residual||_2)
+        compressed_per_vector = self.d * self.bit_width + 64
         return original_per_vector / compressed_per_vector
 
 
@@ -169,3 +177,14 @@ class TurboQuantMSE:
 
     def dequantize(self, indices: np.ndarray, norms: np.ndarray) -> np.ndarray:
         return self.polar_quant.dequantize(indices, norms)
+
+    def compressed_size_bits(self, n_vectors: int) -> int:
+        """Compute total storage in bits for n_vectors compressed vectors.
+
+        Includes:
+        - PolarQuant indices: b bits per coordinate per vector
+        - Norms: 32 bits (float32) per vector (stored for per-vector rescaling)
+        """
+        per_vector = self.d * self.bit_width
+        norms = 32  # float32 per vector
+        return n_vectors * (per_vector + norms)
