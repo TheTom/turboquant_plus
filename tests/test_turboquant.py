@@ -172,8 +172,9 @@ class TestCompressedSizeBits:
     def test_size_calculation(self):
         tq = TurboQuant(d=128, bit_width=3, seed=42)
         bits = tq.compressed_size_bits(100)
-        # 100 vectors × (128 coords × 3 bits + 32 bits norm) = 100 × 416 = 41600
-        assert bits == 100 * (128 * 3 + 32)
+        # 100 vectors × (128 coords × 3 bits + 64 bits norms) = 100 × 448 = 44800
+        # 64 = vector_norm (32) + residual_norm (32), both stored in CompressedVector
+        assert bits == 100 * (128 * 3 + 64)
 
     def test_size_scales_with_vectors(self):
         tq = TurboQuant(d=64, bit_width=4, seed=42)
@@ -188,11 +189,11 @@ class TestCompressionRatio:
     def test_3bit_compression(self):
         tq = TurboQuant(d=128, bit_width=3, seed=42)
         ratio = tq.compression_ratio(original_bits_per_value=16)
-        # 16 / (3 + 32/128) ≈ 16/3.25 ≈ 4.92
+        # 16 / (3 + 64/128) = 16/3.5 ≈ 4.57 (64 = vector_norm + residual_norm)
         assert 4.0 < ratio < 6.0, f"3-bit compression ratio {ratio:.2f} unexpected"
 
     def test_4bit_compression(self):
         tq = TurboQuant(d=128, bit_width=4, seed=42)
         ratio = tq.compression_ratio(original_bits_per_value=16)
-        # 16 / (4 + 32/128) ≈ 16/4.25 ≈ 3.76
+        # 16 / (4 + 64/128) = 16/4.5 ≈ 3.56 (64 = vector_norm + residual_norm)
         assert 3.0 < ratio < 5.0, f"4-bit compression ratio {ratio:.2f} unexpected"
