@@ -18,7 +18,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 # Add parent dir for turboquant imports
 sys.path.insert(0, ".")
 from turboquant import TurboQuant, TurboQuantMSE, KVCacheCompressor
-from turboquant.outlier import OutlierTurboQuant
+from turboquant.outlier import OutlierTurboQuant, _compute_channel_split
+from turboquant.calibration import calibrate_outlier_channels
 
 
 MODEL_NAME = "Qwen/Qwen3-1.7B"  # head_dim=128, same as 27B
@@ -146,18 +147,23 @@ def _compress_outlier(k_cache, v_cache, k_bits, v_bits, head_dim):
     k_hat = np.zeros_like(k_cache)
     v_hat = np.zeros_like(v_cache)
 
+    k_n_outlier, _, _, _ = _compute_channel_split(head_dim, k_bits)
+    v_n_outlier, _, _, _ = _compute_channel_split(head_dim, v_bits)
+
     for layer in range(num_layers):
         for head in range(num_heads):
             # K cache with outlier TurboQuant
-            k_oq = OutlierTurboQuant(head_dim, target_bits=k_bits, seed=42 + layer * 100 + head)
             k_vecs = k_cache[layer, head]
+            k_outlier_idx = calibrate_outlier_channels(k_vecs, k_n_outlier)
+            k_oq = OutlierTurboQuant(head_dim, target_bits=k_bits, seed=42 + layer * 100 + head, outlier_idx=k_outlier_idx)
             for i in range(seq_len):
                 c = k_oq.quantize(k_vecs[i])
                 k_hat[layer, head, i] = k_oq.dequantize(c)
 
             # V cache with outlier PolarQuant (MSE-only, lower overhead)
-            v_oq = OutlierTurboQuant(head_dim, target_bits=v_bits, seed=42 + layer * 100 + head + 50)
             v_vecs = v_cache[layer, head]
+            v_outlier_idx = calibrate_outlier_channels(v_vecs, v_n_outlier)
+            v_oq = OutlierTurboQuant(head_dim, target_bits=v_bits, seed=42 + layer * 100 + head + 50, outlier_idx=v_outlier_idx)
             for i in range(seq_len):
                 c = v_oq.quantize(v_vecs[i])
                 v_hat[layer, head, i] = v_oq.dequantize(c)
@@ -213,8 +219,13 @@ def attention_quality_test(model, tokenizer, kv: dict):
                     k_hat, v_hat = compressor.decompress(compressed)
                     k_c, v_c = k_hat[0, 0], v_hat[0, 0]
                 else:
-                    k_oq = OutlierTurboQuant(head_dim, target_bits=k_bits, seed=42)
-                    v_oq = OutlierTurboQuant(head_dim, target_bits=v_bits, seed=43)
+                    k_n_outlier, _, _, _ = _compute_channel_split(head_dim, k_bits)
+                    v_n_outlier, _, _, _ = _compute_channel_split(head_dim, v_bits)
+                    k_outlier_idx = calibrate_outlier_channels(k, k_n_outlier)
+                    v_outlier_idx = calibrate_outlier_channels(v, v_n_outlier)
+                    
+                    k_oq = OutlierTurboQuant(head_dim, target_bits=k_bits, seed=42, outlier_idx=k_outlier_idx)
+                    v_oq = OutlierTurboQuant(head_dim, target_bits=v_bits, seed=43, outlier_idx=v_outlier_idx)
                     k_c = np.array([k_oq.dequantize(k_oq.quantize(k[i])) for i in range(seq_len)])
                     v_c = np.array([v_oq.dequantize(v_oq.quantize(v[i])) for i in range(seq_len)])
 
