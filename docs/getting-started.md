@@ -43,6 +43,41 @@ cmake -B build -DGGML_CUDA=ON
 cmake --build build --config Release -j
 ```
 
+### CUDA build notes for containerized/Linux setups
+
+Two easy-to-miss details if you are building the CUDA path outside a fully provisioned host dev environment:
+
+1. If you build inside an `nvidia/cuda:*` container, pass `--gpus all` to the build container as well, not just the runtime container. Otherwise the final link step can fail with missing `libcuda.so.1` / unresolved CUDA driver symbols.
+2. If you want to use `-hf` / `--hf-repo`, keep HTTPS support enabled and make sure the OpenSSL development package is installed before configuring CMake. On Debian/Ubuntu-based systems or containers this usually means `libssl-dev` plus `pkg-config`.
+
+Example CUDA container build:
+
+```bash
+docker run --rm --gpus all \
+  -v "$PWD:/src" \
+  -w /src \
+  nvidia/cuda:12.8.1-devel-ubuntu24.04 \
+  bash -lc '
+    apt-get update &&
+    apt-get install -y --no-install-recommends \
+      cmake build-essential git ca-certificates libssl-dev pkg-config &&
+    cmake -S . -B build \
+      -DGGML_CUDA=ON \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DLLAMA_OPENSSL=ON &&
+    cmake --build build --config Release -j"$(nproc)"
+  '
+```
+
+Without the OpenSSL development package, `llama-server -hf ...` can fail at runtime with:
+
+```text
+HTTPS is not supported. Please rebuild with one of:
+  -DLLAMA_BUILD_BORINGSSL=ON
+  -DLLAMA_BUILD_LIBRESSL=ON
+  -DLLAMA_OPENSSL=ON
+```
+
 ## Quick Start
 
 Run a model with TurboQuant+ KV cache compression:
