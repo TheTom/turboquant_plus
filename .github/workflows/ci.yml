@@ -34,6 +34,8 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install pytest-cov
           python3 -m pip install -e ".[dev]"
+          # pyproject.toml packages only refract, so it no longer declares these.
+          python3 -m pip install "numpy>=1.24" "scipy>=1.10"
 
       - name: Run tests with coverage
         run: python3 -m pytest tests/ -v --tb=short --cov=turboquant --cov-fail-under=95

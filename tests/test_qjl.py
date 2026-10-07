@@ -26,22 +26,42 @@ class TestQJLRoundTrip:
 
     @pytest.mark.parametrize("d", [64, 128, 256, 512])
     def test_dequantized_has_correct_scale(self, d):
-        """Dequantized vectors should have roughly the same norm as originals."""
+        """||x_hat|| = sqrt(pi/2) * ||x|| for every x, not only on average.
+
+        S is orthogonal and every sign is +1 or -1, so ||S^T signs|| = sqrt(d).
+        """
         qjl = QJL(d=d, seed=42)
         rng = np.random.default_rng(99)
 
-        norm_ratios = []
         for _ in range(200):
             x = rng.standard_normal(d)
             signs, norm = qjl.quantize(x)
             x_hat = qjl.dequantize(signs, norm)
+            ratio = np.linalg.norm(x_hat) / np.linalg.norm(x)
+            assert np.isclose(ratio, QJL_CONST, rtol=1e-9), (
+                f"Norm ratio {ratio:.6f} != sqrt(pi/2) = {QJL_CONST:.6f}"
+            )
 
-            if np.linalg.norm(x) > 1e-10:
-                norm_ratios.append(np.linalg.norm(x_hat) / np.linalg.norm(x))
+    @pytest.mark.parametrize("d", [64, 128, 256, 512])
+    def test_shrinkage_mse_matches_closed_form(self, d):
+        """Relative MSE is pi/2 - 1 at shrinkage 1.0 and 1 - 2/pi at 2/pi.
 
-        avg_ratio = np.mean(norm_ratios)
-        # QJL is unbiased — average norm ratio should be close to 1.0
-        assert 0.5 < avg_ratio < 2.0, f"Average norm ratio {avg_ratio:.3f} out of range"
+        Pins the derivation in QJL.dequantize. At finite d both values sit
+        slightly below the limit, by less than 0.01 at d=64.
+        """
+        qjl = QJL(d=d, seed=42)
+        rng = np.random.default_rng(5)
+
+        rel_mse = {1.0: [], 2 / np.pi: []}
+        for _ in range(200):
+            x = rng.standard_normal(d)
+            signs, norm = qjl.quantize(x)
+            for shrinkage, errors in rel_mse.items():
+                x_hat = qjl.dequantize(signs, norm, shrinkage=shrinkage)
+                errors.append(np.sum((x_hat - x) ** 2) / np.sum(x**2))
+
+        assert np.mean(rel_mse[1.0]) == pytest.approx(np.pi / 2 - 1, abs=0.02)
+        assert np.mean(rel_mse[2 / np.pi]) == pytest.approx(1 - 2 / np.pi, abs=0.02)
 
     def test_inner_product_unbiased_single_side(self):
         """QJL is unbiased: E[⟨y, Q⁻¹(Q(x))⟩] = ⟨y, x⟩ (paper Theorem 2).
